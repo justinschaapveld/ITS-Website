@@ -15,8 +15,11 @@ export default function Footer() {
                 className="h-9 w-auto object-contain bg-transparent"
               />
             </Link>
+            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--color-yellow)' }}>
+              Since 1978
+            </div>
             <p className="text-sm leading-relaxed mb-5 text-zinc-400">
-              Melbourne-based wholesale supplier of tyre repair materials, automotive tools and workshop equipment. Serving the Australian tyre industry since 1987.
+              Melbourne-based wholesale supplier of tyre repair materials, automotive tools and workshop equipment, dispatching Australia-wide.
             </p>
             <div className="space-y-2 text-sm">
               <a href="tel:0387810600" className="flex items-center gap-2 hover:text-white transition-colors">
@@ -33,7 +36,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Clock size={14} style={{ color: 'var(--color-yellow)' }} />
-                Mon–Fri 7:30am–5:00pm AEST
+                Mon–Fri 8:00am–4:00pm
               </div>
             </div>
           </div>
@@ -110,7 +113,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Clock size={14} style={{ color: 'var(--color-yellow)' }} />
-                <span className="text-xs">Mon–Fri 7:30am–5:00pm</span>
+                <span className="text-xs">Mon–Fri 8:00am–4:00pm</span>
               </div>
               <Link
                 to="/contact"

@@ -86,7 +86,7 @@ export default function ContactPage() {
               <div className="flex items-center gap-3">
                 <Clock size={16} className="flex-shrink-0" style={{ color: 'var(--color-teal)' }} />
                 <div className="text-zinc-600">
-                  <div className="font-medium text-zinc-800">Mon–Fri 7:30am–5:00pm AEST</div>
+                  <div className="font-medium text-zinc-800">Mon–Fri 8:00am–4:00pm</div>
                   <div className="text-xs text-zinc-400">Closed weekends and public holidays</div>
                 </div>
               </div>

@@ -210,7 +210,7 @@ export default function GroupPage() {
               className="text-2xl md:text-3xl font-bold text-white"
               style={{ fontFamily: 'Oswald, sans-serif' }}
             >
-              Our specialists are available Mon–Fri 7:30am–5:00pm AEST.
+              Our specialists are available Mon–Fri 8:00am–4:00pm.
             </h2>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">

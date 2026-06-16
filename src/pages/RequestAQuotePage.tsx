@@ -147,7 +147,7 @@ export default function RequestAQuotePage() {
                   </div>
                   <div>
                     <div className="text-xs text-zinc-500 uppercase tracking-wide">Hours</div>
-                    <div className="text-white text-sm font-semibold">Mon–Fri 7:30am – 5:00pm AEST</div>
+                    <div className="text-white text-sm font-semibold">Mon–Fri 8:00am – 4:00pm</div>
                   </div>
                 </div>
               </div>

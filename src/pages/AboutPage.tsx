@@ -1,14 +1,6 @@
 import { Link } from "react-router-dom";
-import { CheckCircle, Users, Award, MapPin, ArrowRight } from "lucide-react";
-
-const milestones = [
-  { year: "1987", event: "Industrial Tyre Supplies founded in Melbourne by the Hanley family, supplying tyre repair materials to Victorian workshops." },
-  { year: "1994", event: "Expanded product range to include a full complement of workshop tools, jacking equipment and valve accessories." },
-  { year: "2001", event: "Moved to our current Dandenong South warehouse, enabling bulk stockholding for next-day dispatch across Australia." },
-  { year: "2008", event: "Launched dedicated service to the mining and earthmoving sector with expanded OTR and heavy-duty product lines." },
-  { year: "2015", event: "ISO 9001 Quality Management System certification achieved, formalising our commitment to consistent product and service quality." },
-  { year: "2021", event: "Expanded TPMS product range and launched this online product catalogue to better serve customers Australia-wide." },
-];
+import { ArrowRight, MapPin, Phone, Mail, Clock, Wrench } from "lucide-react";
+import { productGroups } from "../data/categories";
 
 export default function AboutPage() {
   return (
@@ -20,108 +12,85 @@ export default function AboutPage() {
             About Us
           </div>
           <h1 className="text-5xl font-bold text-white mb-4">
-            38 Years Supplying<br />Australia's Tyre Industry
+            Supplying the Australian<br />Tyre Trade Since 1978
           </h1>
           <p className="text-white/70 text-lg max-w-2xl">
-            Founded in Melbourne in 1987, Industrial Tyre Supplies (ITS) has grown to become a trusted wholesale distributor of tyre repair materials, automotive tools and workshop equipment.
+            Industrial Tyre Supplies (ITS) is a wholesale distributor of tyre repair materials, automotive tools and workshop equipment, based in Dandenong South, Victoria.
           </p>
         </div>
       </section>
 
-      {/* Mission */}
-      <section className="max-w-7xl mx-auto px-4 py-14 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      {/* Who we supply / what we specialise in */}
+      <section className="max-w-7xl mx-auto px-4 py-14 grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div>
           <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-teal)' }}>
-            Our Mission
+            Who We Supply
           </div>
           <h2 className="text-3xl font-bold mb-5" style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}>
-            Keeping Australia's Wheels Turning
+            Trade Customers Across Australia
           </h2>
           <div className="space-y-4 text-zinc-600 leading-relaxed text-sm">
             <p>
-              Industrial Tyre Supplies exists to provide professional tyre workshops, fleet operators, and automotive businesses with access to the best repair materials and tools available — at trade prices, with reliable supply and genuine technical support.
+              ITS supplies tyre workshops, fleet operators and agricultural businesses with the materials and tools they rely on for day-to-day repair and service work.
             </p>
             <p>
-              We don't just sell products. Our team are industry professionals who understand the pressures of a busy tyre bay and the critical importance of quality repair materials. We stock what works, not just what sells.
-            </p>
-            <p>
-              If you work on tyres and wheels, ITS has the tools and materials you need — dispatched from our Melbourne warehouse, delivered anywhere in Australia.
+              We dispatch Australia-wide from our Dandenong South warehouse — wherever your business is based, we can supply it.
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          {[
-            { icon: Users, stat: "3,200+", label: "Active Customers" },
-            { icon: Award, stat: "38", label: "Years in Business" },
-            { icon: MapPin, stat: "Melbourne", label: "Dandenong South VIC" },
-            { icon: CheckCircle, stat: "ISO 9001", label: "Quality Certified" },
-          ].map(({ icon: Icon, stat, label }) => (
-            <div key={label} className="bg-white border border-zinc-200 rounded-lg p-6 text-center">
-              <Icon size={28} className="mx-auto mb-3" style={{ color: 'var(--color-teal)' }} />
-              <div
-                className="text-3xl font-bold"
-                style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}
+        <div>
+          <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-teal)' }}>
+            What We Specialise In
+          </div>
+          <h2 className="text-3xl font-bold mb-5" style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}>
+            Our Product Range
+          </h2>
+          <div className="grid grid-cols-2 gap-2">
+            {productGroups.map((group) => (
+              <Link
+                key={group.id}
+                to={`/products/${group.slug}`}
+                className="flex items-center gap-2 text-sm text-zinc-600 hover:text-[var(--color-teal)] transition-colors py-1"
               >
-                {stat}
-              </div>
-              <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mt-1">{label}</div>
-            </div>
-          ))}
+                <Wrench size={13} className="flex-shrink-0" style={{ color: 'var(--color-teal)' }} />
+                {group.name}
+              </Link>
+            ))}
+          </div>
+          <Link
+            to="/products"
+            className="inline-flex items-center gap-1.5 mt-5 text-sm font-semibold uppercase tracking-wide transition-colors hover:opacity-70"
+            style={{ color: 'var(--color-teal)' }}
+          >
+            View Full Catalogue <ArrowRight size={15} />
+          </Link>
         </div>
       </section>
 
-      {/* History */}
+      {/* Confirmed details */}
       <section className="py-14" style={{ background: 'var(--color-teal)' }}>
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-yellow)' }}>
-            Our History
+            Company Details
           </div>
           <h2 className="text-3xl font-bold text-white mb-10" style={{ fontFamily: 'Oswald, sans-serif' }}>
-            Key Milestones
+            Industrial Tyre Supplies Pty Ltd
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {milestones.map((m) => (
-              <div key={m.year} className="border border-white/20 rounded-lg p-5 bg-white/5">
-                <div
-                  className="text-2xl font-bold mb-2"
-                  style={{ color: 'var(--color-yellow)', fontFamily: 'Oswald, sans-serif' }}
-                >
-                  {m.year}
-                </div>
-                <p className="text-white/70 text-sm leading-relaxed">{m.event}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { icon: MapPin, label: "Warehouse", value: "2 Venture Court, Dandenong South VIC 3175" },
+              { icon: Clock, label: "Trading Hours", value: "Mon–Fri 8:00am–4:00pm" },
+              { icon: Phone, label: "Phone", value: "03 8781 0600" },
+              { icon: Mail, label: "Email", value: "its-office@itsindustrial.com.au" },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="border border-white/20 rounded-lg p-5 bg-white/5">
+                <Icon size={20} className="mb-3" style={{ color: 'var(--color-yellow)' }} />
+                <div className="text-white/50 text-xs font-bold uppercase tracking-widest mb-1">{label}</div>
+                <div className="text-white text-sm leading-relaxed">{value}</div>
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Team */}
-      <section className="max-w-7xl mx-auto px-4 py-14">
-        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-teal)' }}>
-          Our Team
-        </div>
-        <h2 className="text-3xl font-bold mb-4" style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}>
-          Industry Professionals
-        </h2>
-        <p className="text-zinc-600 mb-8 max-w-2xl text-sm leading-relaxed">
-          Every member of the ITS team has hands-on experience in the tyre industry. We hire from workshops, fleets and tyre manufacturers — people who understand the products they're selling.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {[
-            { name: "Technical Sales", text: "Former workshop technicians who can specify the right product for any repair scenario." },
-            { name: "Product Sourcing", text: "Our buying team travels internationally to source quality products from leading global manufacturers." },
-            { name: "Customer Service", text: "Dedicated account managers for trade customers, with rapid response to queries and orders." },
-          ].map((t) => (
-            <div key={t.name} className="bg-white border border-zinc-200 rounded-lg p-6">
-              <h3
-                className="font-bold text-lg mb-2"
-                style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}
-              >
-                {t.name}
-              </h3>
-              <p className="text-zinc-500 text-sm leading-relaxed">{t.text}</p>
-            </div>
-          ))}
+          <div className="text-white/50 text-xs mt-6">ABN 48 533 559 801</div>
         </div>
       </section>
 

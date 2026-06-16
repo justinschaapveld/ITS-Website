@@ -2,12 +2,20 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Award, Truck, Users, Phone, MapPin, Shield } from "lucide-react";
 import { productGroups } from "../data/categories";
 import { getFeaturedProducts } from "../data/products";
-import HeroCarousel from "../components/HeroCarousel";
 
 const featuredGroups = productGroups.slice(0, 6);
 const specials: { label: string; text: string; to?: string }[] = [
   { label: "TRADE PRICING", text: "Volume orders — ask about trade pricing" },
   { label: "CATALOGUE", text: "Browse the full product catalogue", to: "/products" },
+];
+
+// Confirmed company data — used in the hero spec block.
+const heroSpecRows: { label: string; value: string }[] = [
+  { label: "SUPPLIER", value: "Industrial Tyre Supplies" },
+  { label: "FOUNDED",  value: "1978" },
+  { label: "ABN",      value: "48 533 559 801" },
+  { label: "BASE",     value: "Dandenong South, Victoria" },
+  { label: "DISPATCH", value: "Australia-wide" },
 ];
 
 const groupImages: Record<string, string> = {
@@ -24,51 +32,94 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Hero */}
-      <HeroCarousel>
-        <div className="max-w-3xl">
-          <div
-            className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded mb-6"
-            style={{ background: 'var(--color-teal)', color: 'white' }}
-          >
-            Melbourne-Based · Nationwide Supply
-          </div>
-          <h1
-            className="text-5xl md:text-7xl font-bold text-white leading-[0.92] mb-6"
-            style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.01em' }}
-          >
-            Everything for<br />
-            <span style={{ color: 'var(--color-yellow)' }}>Tyres</span><br />
-            and Wheels
-          </h1>
-          <p className="text-zinc-300 text-xl leading-relaxed mb-4 max-w-xl">
-            If you work on tyres and wheels, ITS has the tools and materials you need.
-          </p>
-          <p className="text-zinc-400 text-sm mb-8 max-w-xl">
-            Industrial Tyre Supplies — wholesale tyre repair materials, workshop tools, valves and automotive supplies delivered across Australia.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Link
-              to="/products"
-              className="inline-flex items-center justify-center gap-2 px-7 py-4 font-bold uppercase tracking-wide rounded text-base transition-colors"
-              style={{ background: 'var(--color-yellow)', color: 'var(--color-charcoal)', fontFamily: 'Oswald, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#ffc61a')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-yellow)')}
-            >
-              Browse Products <ArrowRight size={18} />
-            </Link>
-            <Link
-              to="/contact"
-              className="inline-flex items-center justify-center gap-2 border-2 px-7 py-4 font-bold uppercase tracking-wide rounded text-base transition-colors text-white hover:text-white"
-              style={{ borderColor: 'var(--color-teal)', fontFamily: 'Oswald, sans-serif' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-teal)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-            >
-              Request a Quote
-            </Link>
+      {/* Hero — spec-format identity card */}
+      <section className="bg-field border-b border-rule">
+        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-[45fr_55fr] gap-5 lg:gap-6">
+            {/* Left: identity spec block + headline + CTAs */}
+            <div className="bg-white border border-rule p-6 md:p-8 lg:p-10">
+              <dl className="border-y border-rule divide-y divide-[var(--color-rule)]">
+                {heroSpecRows.map((row) => (
+                  <div
+                    key={row.label}
+                    className="flex flex-col sm:grid sm:grid-cols-[110px_1fr] sm:items-baseline py-2.5 gap-y-1 sm:gap-y-0"
+                  >
+                    <dt className="font-mono text-[10.5px] tracking-[0.1em] uppercase text-steel">
+                      {row.label}
+                    </dt>
+                    <dd className="font-sans text-[15px] leading-snug text-ink">
+                      {row.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+
+              <h1
+                className="font-display uppercase text-ink mt-8 md:mt-10 leading-[1.02] text-[2.25rem] md:text-[2.75rem] lg:text-[3.25rem]"
+                style={{ letterSpacing: '0.05em', fontWeight: 800 }}
+              >
+                Tools and<br className="hidden md:inline" /> Materials for the Tyre Trade.
+              </h1>
+
+              <p className="font-sans text-base md:text-[17px] leading-relaxed mt-4 md:mt-5 max-w-md" style={{ color: 'rgba(26,26,26,0.65)' }}>
+                If you work on tyres and wheels, ITS has what you need.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3 mt-7 md:mt-8">
+                <Link
+                  to="/products"
+                  className="flex items-center justify-center px-6 py-3.5 font-sans font-medium uppercase text-sm hover:opacity-90 transition-opacity"
+                  style={{ background: 'var(--color-signal)', color: 'var(--color-ink)', letterSpacing: '0.06em' }}
+                >
+                  View Catalogue
+                </Link>
+                <a
+                  href="tel:0387810600"
+                  className="flex items-center justify-center px-6 py-3.5 font-sans font-medium uppercase text-sm border transition-colors hover:text-white"
+                  style={{ borderColor: 'var(--color-teal)', color: 'var(--color-teal)', letterSpacing: '0.06em' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-teal)'; e.currentTarget.style.color = '#fff'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-teal)'; }}
+                >
+                  Call 03 8781 0600
+                </a>
+              </div>
+            </div>
+
+            {/* Right: catalogue grid — all 10 product groups */}
+            <div className="bg-white border border-rule p-5 md:p-6 lg:p-8 flex flex-col">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {productGroups.map((group) => (
+                  <Link
+                    key={group.id}
+                    to={`/products/${group.slug}`}
+                    className="block bg-white border border-rule p-4 md:p-5 transition-colors hover:border-[var(--color-teal)]"
+                  >
+                    <div
+                      className="font-display uppercase text-ink text-[15px] md:text-[16px] leading-[1.1]"
+                      style={{ letterSpacing: '0.04em', fontWeight: 800 }}
+                    >
+                      {group.name}
+                    </div>
+                    <div className="border-t border-rule mt-2.5 mb-2.5" />
+                    <div className="font-mono text-[11px] tracking-[0.08em] uppercase text-steel">
+                      {group.categories.length} {group.categories.length === 1 ? 'category' : 'categories'}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-5 md:mt-6 flex justify-end">
+                <Link
+                  to="/products"
+                  className="font-mono text-[11px] tracking-[0.12em] uppercase hover:opacity-70 transition-opacity"
+                  style={{ color: 'var(--color-teal)' }}
+                >
+                  All Categories →
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
-      </HeroCarousel>
+      </section>
 
       {/* Specials strip */}
       <section className="border-y border-zinc-700 overflow-hidden" style={{ background: '#222' }}>

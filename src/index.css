@@ -1,25 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+/*
+  Type system (spec-format design pass):
+  - Display: Barlow Condensed ExtraBold — section headers, group names, hero headline (use sparingly).
+  - Body: IBM Plex Sans — prose, nav, button labels, CTAs. Default body face.
+  - Spec: IBM Plex Mono — data-origin content only (SKUs, spec field labels, spec values, category counts).
+  Oswald is also loaded for legacy inline `fontFamily: 'Oswald, sans-serif'` references on pages
+  not in this design pass (About, Training, Shipping, Returns, Contact, GroupPage, ProductDetailPage).
+*/
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&family=Oswald:wght@400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --color-teal:      #325863;
-  --color-teal-dark: #243f48;
-  --color-charcoal:  #1a1a1a;
-  --color-offwhite:  #f5f5f3;
-  --color-yellow:    #f5b800;
+  /* Spec-format tokens */
+  --color-ink:        #1a1a1a;
+  --color-teal:       #2d5260;
+  --color-teal-dark:  #1f3d47;
+  --color-field:      #edeef0;
+  --color-steel:      #6b7c83;
+  --color-signal:     #f5b800;
+  --color-rule:       #ced5d8;
+
+  /* Legacy aliases — map to refined values so existing pages pick up the palette evolution */
+  --color-charcoal:   #1a1a1a;
+  --color-offwhite:   #edeef0;
+  --color-yellow:     #f5b800;
 }
 
 @layer base {
   body {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: var(--color-offwhite);
-    color: var(--color-charcoal);
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: var(--color-field);
+    color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
   }
 
+  /* Global heading default — kept on Oswald for pages outside this design pass.
+     HomePage hero and ProductsPage cards explicitly set font-display (Barlow Condensed). */
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Oswald', sans-serif;
     font-weight: 700;

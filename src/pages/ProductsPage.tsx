@@ -1,52 +1,6 @@
 import { Link } from "react-router-dom";
-import {
-  Wrench, Gauge, Disc3, Hammer, Wind, Truck, BatteryCharging,
-  RefreshCcw, Tent, Package, ArrowRight, Phone,
-} from "lucide-react";
+import { Phone } from "lucide-react";
 import { productGroups } from "../data/categories";
-
-const groupMeta: Record<string, { Icon: React.ElementType; shortDesc: string }> = {
-  "tyre-tube-repair": {
-    Icon: Wrench,
-    shortDesc: "Repair materials, patches, cements and carbide tools",
-  },
-  "tyre-fitting-handling": {
-    Icon: Disc3,
-    shortDesc: "Tyre levers, mounting paste, demount tools and more",
-  },
-  "valves-accessories": {
-    Icon: Gauge,
-    shortDesc: "Valve stems, caps, TPMS sensors and accessories",
-  },
-  "balance-weights": {
-    Icon: Hammer,
-    shortDesc: "Steel, zinc and adhesive balance weights for all wheels",
-  },
-  "air-tools-airlines": {
-    Icon: Wind,
-    shortDesc: "Air guns, gauges, couplings and airline fittings",
-  },
-  "jacking-lifting": {
-    Icon: Truck,
-    shortDesc: "Air jacks, hydraulic jacks and vehicle support stands",
-  },
-  "cordless-tools": {
-    Icon: BatteryCharging,
-    shortDesc: "Battery-powered torque tools and impact wrenches",
-  },
-  "retreading": {
-    Icon: RefreshCcw,
-    shortDesc: "Pre-cure tread rubber, envelopes and retread materials",
-  },
-  "outdoor-leisure": {
-    Icon: Tent,
-    shortDesc: "Tyre repair kits for 4WD, camping and recreational use",
-  },
-  "other-workshop": {
-    Icon: Package,
-    shortDesc: "Workshop consumables, signage and miscellaneous supplies",
-  },
-};
 
 export default function ProductsPage() {
   return (
@@ -69,64 +23,50 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Group cards grid */}
-      <section className="max-w-7xl mx-auto px-4 py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* Group cards grid — spec-panel format */}
+      <section className="max-w-7xl mx-auto px-4 py-14 lg:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-7">
           {productGroups.map((group) => {
-            const meta = groupMeta[group.slug];
-            const Icon = meta?.Icon ?? Package;
-            const shortDesc = meta?.shortDesc ?? group.description;
-
+            const examples = group.categories.slice(0, 4).map((c) => c.name).join(' · ');
             return (
               <Link
                 key={group.id}
                 to={`/products/${group.slug}`}
-                className="group flex flex-col rounded-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-0.5"
-                style={{
-                  background: '#1e2a2e',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-teal)')}
-                onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}
+                className="block bg-white border border-rule p-6 md:p-7 transition-colors hover:border-[var(--color-teal)]"
               >
-                {/* Icon area */}
-                <div
-                  className="flex items-center justify-center pt-8 pb-6 px-6"
-                  style={{ background: '#152028' }}
+                <h2
+                  className="font-display uppercase text-ink text-[20px] md:text-[22px] leading-[1.1] mb-3"
+                  style={{ letterSpacing: '0.04em', fontWeight: 800 }}
                 >
-                  <div
-                    className="w-16 h-16 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-1"
-                    style={{ background: 'rgba(245,184,0,0.12)', border: '1px solid rgba(245,184,0,0.2)' }}
-                  >
-                    <Icon size={30} style={{ color: '#f5b800' }} />
+                  {group.name}
+                </h2>
+                <div className="border-t border-rule" />
+                <dl className="py-4 space-y-3">
+                  <div className="grid grid-cols-[96px_1fr] gap-3 items-baseline">
+                    <dt className="font-mono text-[10.5px] tracking-[0.1em] uppercase text-steel">
+                      {group.categories.length === 1 ? 'Category' : 'Categories'}
+                    </dt>
+                    <dd className="font-mono text-[13px] text-ink">
+                      {group.categories.length}
+                    </dd>
                   </div>
-                </div>
-
-                {/* Content */}
-                <div className="flex flex-col flex-1 px-5 pb-6">
-                  <h2
-                    className="text-white font-bold uppercase text-base leading-snug mb-2 transition-colors group-hover:text-[#f5b800]"
-                    style={{ fontFamily: 'Oswald, sans-serif', letterSpacing: '0.03em' }}
-                  >
-                    {group.name}
-                  </h2>
-                  <p className="text-zinc-400 text-xs leading-relaxed flex-1 mb-4">
-                    {shortDesc}
-                  </p>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span
-                      className="text-xs font-bold uppercase tracking-widest px-2 py-1 rounded"
-                      style={{ background: 'rgba(50,88,99,0.3)', color: 'var(--color-teal)' }}
-                    >
-                      {group.categories.length} {group.categories.length === 1 ? 'category' : 'categories'}
-                    </span>
-                    <span
-                      className="flex items-center gap-1 text-xs font-bold uppercase tracking-wide transition-colors"
-                      style={{ color: 'rgba(255,255,255,0.3)' }}
-                    >
-                      Browse <ArrowRight size={12} />
-                    </span>
+                  <div className="grid grid-cols-[96px_1fr] gap-3 items-baseline">
+                    <dt className="font-mono text-[10.5px] tracking-[0.1em] uppercase text-steel pt-0.5">
+                      Examples
+                    </dt>
+                    <dd className="font-mono text-[12.5px] text-ink leading-relaxed line-clamp-2">
+                      {examples}
+                    </dd>
                   </div>
+                </dl>
+                <div className="border-t border-rule" />
+                <div className="mt-4 flex justify-end">
+                  <span
+                    className="font-mono text-[11px] tracking-[0.12em] uppercase"
+                    style={{ color: 'var(--color-teal)' }}
+                  >
+                    Browse →
+                  </span>
                 </div>
               </Link>
             );
@@ -134,34 +74,34 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* CTA Strip */}
-      <section className="py-14" style={{ background: 'var(--color-teal)' }}>
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* CTA Strip — field background, rule border, signal CTA */}
+      <section className="py-12 md:py-14 bg-field border-t border-rule">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row md:items-center justify-between gap-7">
           <div>
-            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--color-yellow)' }}>
+            <div className="font-sans font-medium uppercase mb-2 text-[11px] text-steel" style={{ letterSpacing: '0.15em' }}>
               Need help finding something?
             </div>
             <h2
-              className="text-2xl md:text-3xl font-bold text-white leading-snug"
-              style={{ fontFamily: 'Oswald, sans-serif' }}
+              className="font-display uppercase text-ink text-[26px] md:text-[30px] leading-[1.1]"
+              style={{ letterSpacing: '0.04em', fontWeight: 800 }}
             >
               Our specialists can source any tyre<br className="hidden md:block" /> or workshop supply.
             </h2>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0 w-full md:w-auto">
             <Link
               to="/contact"
-              className="px-8 py-3.5 font-bold uppercase tracking-wide rounded transition-colors whitespace-nowrap text-center"
-              style={{ background: 'var(--color-yellow)', color: 'var(--color-charcoal)', fontFamily: 'Oswald, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#ffc61a')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-yellow)')}
+              className="flex items-center justify-center px-7 py-3.5 font-sans font-medium uppercase text-sm hover:opacity-90 transition-opacity text-center"
+              style={{ background: 'var(--color-signal)', color: 'var(--color-ink)', letterSpacing: '0.06em' }}
             >
               Contact Our Team
             </Link>
             <a
               href="tel:0387810600"
-              className="flex items-center justify-center gap-2 border-2 border-white/40 px-8 py-3.5 font-bold uppercase tracking-wide rounded transition-colors whitespace-nowrap text-white hover:border-white hover:bg-white/10"
-              style={{ fontFamily: 'Oswald, sans-serif' }}
+              className="flex items-center justify-center gap-2 border px-7 py-3.5 font-sans font-medium uppercase text-sm transition-colors"
+              style={{ borderColor: 'var(--color-teal)', color: 'var(--color-teal)', letterSpacing: '0.06em' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-teal)'; e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-teal)'; }}
             >
               <Phone size={15} /> 03 8781 0600
             </a>

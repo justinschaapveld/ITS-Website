@@ -4,19 +4,30 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Spec-format tokens (kept as flat keys so utilities resolve to bg-ink, text-steel, border-rule, etc.)
+        ink:    '#1a1a1a',
+        field:  '#edeef0',
+        steel:  '#6b7c83',
+        signal: '#f5b800',
+        rule:   '#ced5d8',
+        // Legacy aliases — refreshed values, used by older pages still referencing the brand namespace
         brand: {
-          teal:    '#325863',
-          tealDark:'#243f48',
-          tealLight:'#4a7a89',
-          charcoal:'#1a1a1a',
-          offwhite:'#f5f5f3',
-          yellow:  '#f5b800',
+          teal:        '#2d5260',
+          tealDark:    '#1f3d47',
+          tealLight:   '#4a7a89',
+          charcoal:    '#1a1a1a',
+          offwhite:    '#edeef0',
+          yellow:      '#f5b800',
           yellowHover: '#ffc61a',
         },
       },
       fontFamily: {
+        display: ['"Barlow Condensed"', '"Oswald"', 'sans-serif'],
+        sans:    ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+        mono:    ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        // Legacy
         heading: ['Oswald', 'sans-serif'],
-        body:    ['Inter', 'system-ui', 'sans-serif'],
+        body:    ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         scroll: {

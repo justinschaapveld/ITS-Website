@@ -81,7 +81,7 @@ export default function GroupPage() {
             className="text-lg font-bold uppercase tracking-wide"
             style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}
           >
-            {group.categories.length} Categories
+            {group.categories.length} {group.categories.length === 1 ? 'Category' : 'Categories'}
           </h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

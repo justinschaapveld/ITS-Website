@@ -3,7 +3,6 @@ import { ArrowRight, Award, Truck, Users, Phone, MapPin, Shield } from "lucide-r
 import { productGroups } from "../data/categories";
 import { getFeaturedProducts } from "../data/products";
 
-const featuredGroups = productGroups.slice(0, 6);
 const specials: { label: string; text: string; to?: string }[] = [
   { label: "TRADE PRICING", text: "Volume orders — ask about trade pricing" },
   { label: "CATALOGUE", text: "Browse the full product catalogue", to: "/products" },
@@ -17,15 +16,6 @@ const heroSpecRows: { label: string; value: string }[] = [
   { label: "BASE",     value: "Dandenong South, Victoria" },
   { label: "DISPATCH", value: "Australia-wide" },
 ];
-
-const groupImages: Record<string, string> = {
-  "tyre-tube-repair": "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&q=80",
-  "tyre-fitting-handling": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
-  "valves-accessories": "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=600&q=80",
-  "balance-weights": "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80",
-  "air-tools-airlines": "https://images.unsplash.com/photo-1504222490345-c075b7cf0181?w=600&q=80",
-  "jacking-lifting": "https://images.unsplash.com/photo-1576689625695-e2e5e3f87fe4?w=600&q=80",
-};
 
 export default function HomePage() {
   const featured = getFeaturedProducts().slice(0, 4);
@@ -147,67 +137,6 @@ export default function HomePage() {
               </div>
             );
           })}
-        </div>
-      </section>
-
-      {/* Category Tiles */}
-      <section className="py-16" style={{ background: 'var(--color-offwhite)' }}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-            <div>
-              <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--color-teal)' }}>
-                Product Range
-              </div>
-              <h2 className="text-4xl font-bold" style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}>
-                Shop by Category
-              </h2>
-            </div>
-            <Link
-              to="/products"
-              className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:opacity-70"
-              style={{ color: 'var(--color-teal)' }}
-            >
-              All Categories <ArrowRight size={15} />
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {featuredGroups.map((group) => (
-              <Link
-                key={group.id}
-                to={`/products/${group.slug}`}
-                className="group relative rounded-lg overflow-hidden"
-                style={{ aspectRatio: '4/3' }}
-              >
-                <img
-                  src={groupImages[group.slug] || group.image}
-                  alt={group.name}
-                  className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-65 group-hover:scale-105 transition-all duration-500"
-                  style={{ background: 'var(--color-teal)' }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                {/* Teal accent bar on hover */}
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-1 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"
-                  style={{ background: 'var(--color-yellow)' }}
-                  aria-hidden="true"
-                />
-                <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <div
-                    className="text-white font-bold text-lg md:text-xl leading-tight mb-1"
-                    style={{ fontFamily: 'Oswald, sans-serif' }}
-                  >
-                    {group.name}
-                  </div>
-                  <div
-                    className="flex items-center gap-1 text-xs font-bold uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0 duration-300"
-                    style={{ color: 'var(--color-yellow)' }}
-                  >
-                    Browse <ArrowRight size={12} />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
 

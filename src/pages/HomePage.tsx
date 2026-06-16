@@ -1,7 +1,41 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, Truck, Users, Phone, MapPin, Shield } from "lucide-react";
+import { ArrowRight, Phone, MapPin } from "lucide-react";
 import { productGroups } from "../data/categories";
 import { getFeaturedProducts } from "../data/products";
+
+// Spec-format card image:
+// - Default state: SKU rendered as the visual identity on a field-coloured tile.
+// - Override: if a product has a real image URL that loads, show it instead.
+// All Unsplash URLs in the seed data are treated as placeholders (Bolt leftovers, not real product photos).
+function ProductImage({ src, sku, alt }: { src?: string; sku: string; alt: string }) {
+  const isPlaceholder = !src || src.includes('images.unsplash.com');
+  const [errored, setErrored] = useState(false);
+
+  if (isPlaceholder || errored) {
+    return (
+      <div className="aspect-[4/3] flex items-center justify-center bg-field border-b border-rule">
+        <div
+          className="font-mono text-steel leading-none text-[26px] sm:text-[28px] md:text-[30px]"
+          style={{ letterSpacing: '0.04em' }}
+        >
+          {sku}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="aspect-[4/3] bg-field border-b border-rule overflow-hidden">
+      <img
+        src={src}
+        alt={alt}
+        onError={() => setErrored(true)}
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
+}
 
 const specials: { label: string; text: string; to?: string }[] = [
   { label: "TRADE PRICING", text: "Volume orders — ask about trade pricing" },
@@ -140,111 +174,127 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Featured Products — spec-panel cards with SKU-as-image fallback */}
       {featured.length > 0 && (
-        <section className="border-t border-zinc-200 py-16 bg-white">
+        <section className="border-t border-rule py-14 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-              <div>
-                <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--color-teal)' }}>
-                  Spotlight
-                </div>
-                <h2 className="text-4xl font-bold" style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}>
-                  Featured Products
-                </h2>
+            <div className="mb-8 md:mb-10">
+              <div className="font-mono text-[11px] uppercase mb-2" style={{ color: 'var(--color-teal)', letterSpacing: '0.12em' }}>
+                Featured
               </div>
-              <Link
-                to="/products"
-                className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide transition-colors hover:opacity-70"
-                style={{ color: 'var(--color-teal)' }}
+              <h2
+                className="font-display uppercase text-ink text-[36px] md:text-[42px] lg:text-[46px] leading-[1.02] mb-5"
+                style={{ letterSpacing: '0.04em', fontWeight: 800 }}
               >
-                View All <ArrowRight size={15} />
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {featured.map((product) => (
+                Featured Products
+              </h2>
+              <div className="flex items-center gap-5">
+                <div className="flex-1 border-t border-rule" aria-hidden="true" />
                 <Link
-                  key={product.id}
-                  to={`/products/${product.groupSlug}/${product.categorySlug}/${product.subcategorySlug}/${product.id}`}
-                  className="group bg-zinc-50 border border-zinc-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200"
-                  style={{ borderColor: undefined }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-teal)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = '#e4e4e7')}
+                  to="/products"
+                  className="font-mono text-[11px] uppercase whitespace-nowrap hover:opacity-70 transition-opacity"
+                  style={{ color: 'var(--color-teal)', letterSpacing: '0.12em' }}
                 >
-                  <div className="h-40 overflow-hidden bg-zinc-200">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <div className="text-xs text-zinc-400 font-semibold uppercase tracking-widest mb-1">{product.sku}</div>
-                    <h3
-                      className="font-bold text-zinc-800 text-sm leading-tight mb-2 line-clamp-2 transition-colors"
-                      style={{ fontFamily: 'Oswald, sans-serif' }}
-                      onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-teal)')}
-                      onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-charcoal)')}
-                    >
-                      {product.name}
-                    </h3>
-                    <div className="text-xs font-semibold uppercase tracking-wide flex items-center gap-1" style={{ color: 'var(--color-teal)' }}>
-                      Contact for Pricing <ArrowRight size={11} />
-                    </div>
-                  </div>
+                  View All Catalogue →
                 </Link>
-              ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featured.map((product) => {
+                const group = productGroups.find((g) => g.slug === product.groupSlug);
+                const category = group?.categories.find((c) => c.slug === product.categorySlug);
+                const groupName = group?.name ?? '';
+                const breadcrumb = category ? `${groupName} / ${category.name}` : groupName;
+                return (
+                  <Link
+                    key={product.id}
+                    to={`/products/${product.groupSlug}/${product.categorySlug}/${product.subcategorySlug}/${product.id}`}
+                    className="flex flex-col bg-white border border-rule transition-colors hover:border-[var(--color-teal)]"
+                  >
+                    <ProductImage
+                      src={product.image}
+                      sku={product.sku}
+                      alt={product.name}
+                    />
+                    <div className="flex flex-col flex-1 px-5 py-5">
+                      <div
+                        className="font-mono text-[11px] uppercase text-steel mb-2"
+                        style={{ letterSpacing: '0.05em' }}
+                      >
+                        {product.sku}
+                      </div>
+                      <h3
+                        className="font-display uppercase text-ink text-[18px] md:text-[20px] leading-[1.1] mb-2 line-clamp-2"
+                        style={{ letterSpacing: '0.03em', fontWeight: 800 }}
+                      >
+                        {product.name}
+                      </h3>
+                      <div className="font-sans text-[12.5px] leading-snug text-steel mb-5">
+                        {breadcrumb}
+                      </div>
+                      <div className="mt-auto">
+                        <span
+                          className="font-mono text-[11px] uppercase"
+                          style={{ color: 'var(--color-teal)', letterSpacing: '0.05em' }}
+                        >
+                          Contact for Pricing →
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
       )}
 
-      {/* Trust / Credentials */}
-      <section className="py-16" style={{ background: 'var(--color-teal)' }}>
+      {/* Why ITS — spec-panel cards on field bg */}
+      <section className="py-14 md:py-16 lg:py-20 bg-field border-t border-rule">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-yellow)' }}>
+          <div className="mb-10 md:mb-12 max-w-4xl">
+            <div className="font-mono text-[11px] uppercase mb-3" style={{ color: 'var(--color-teal)', letterSpacing: '0.12em' }}>
               Why ITS
             </div>
             <h2
-              className="text-4xl font-bold text-white mb-4"
-              style={{ fontFamily: 'Oswald, sans-serif' }}
+              className="font-display uppercase text-ink text-[34px] md:text-[40px] lg:text-[44px] leading-[1.04] mb-4"
+              style={{ letterSpacing: '0.04em', fontWeight: 800 }}
             >
-              Trade Supplier of Tyre Repair<br />Materials, Tools & Workshop Equipment
+              Trade Supplier of Tyre Repair<br className="hidden md:inline" /> Materials, Tools & Workshop Equipment
             </h2>
-            <p className="text-white/70 text-lg">
+            <p className="font-sans text-[16px] md:text-[17px] leading-relaxed" style={{ color: 'var(--color-steel)' }}>
               Based in Dandenong South. Dispatching Australia-wide since 1978.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
-                icon: Award,
                 title: "Since 1978",
-                text: "Supplying the Australian tyre trade from our Dandenong South base.",
+                text: "Supplying the Australian tyre trade since 1978 from our base in Dandenong South.",
               },
               {
-                icon: Truck,
-                title: "Nationwide Delivery",
-                text: "Dispatching from our Dandenong South warehouse to customers across all of Australia.",
+                title: "Australia-wide Dispatch",
+                text: "Dispatching nationwide from our Melbourne warehouse. Freight rates by quote.",
               },
               {
-                icon: Users,
-                title: "Trade Specialists",
-                text: "Specialist supplier focused exclusively on the tyre trade since 1978.",
+                title: "Trade Specialist",
+                text: "Specialist supplier focused exclusively on the tyre trade — repair materials, tools, valves, balance weights, workshop equipment.",
               },
               {
-                icon: Shield,
                 title: "Genuine Product",
                 text: "We supply original branded product from established manufacturers.",
               },
-            ].map(({ icon: Icon, title, text }) => (
-              <div key={title} className="text-center">
-                <div className="w-14 h-14 rounded-lg mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--color-yellow)' }}>
-                  <Icon size={26} style={{ color: 'var(--color-charcoal)' }} />
-                </div>
-                <h3 className="text-white font-bold text-lg mb-2" style={{ fontFamily: 'Oswald, sans-serif' }}>{title}</h3>
-                <p className="text-white/70 text-sm leading-relaxed">{text}</p>
+            ].map(({ title, text }) => (
+              <div key={title} className="bg-white border border-rule p-5 md:p-6">
+                <h3
+                  className="font-display uppercase text-ink text-[18px] md:text-[20px] leading-[1.1] mb-3"
+                  style={{ letterSpacing: '0.04em', fontWeight: 800 }}
+                >
+                  {title}
+                </h3>
+                <div className="border-t border-rule mb-3" />
+                <p className="font-sans text-[14.5px] leading-[1.4] text-ink">{text}</p>
               </div>
             ))}
           </div>

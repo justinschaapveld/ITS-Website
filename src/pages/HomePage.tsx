@@ -371,12 +371,6 @@ export default function HomePage() {
                 </a>
               </div>
 
-              <p
-                className="font-mono text-[11px] uppercase mt-8"
-                style={{ color: 'var(--color-steel)', letterSpacing: '0.1em' }}
-              >
-                Trade references available on request.
-              </p>
             </div>
 
             {/* Right — warehouse spec block */}

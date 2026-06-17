@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const heroSlides = [
-  { src: "/Hero/hero-1.jpg", alt: "Tyre technician mounting a tyre on a tyre machine using tyre levers, wearing full PPE" },
-  { src: "/Hero/hero-5.jpg", alt: "Tyre fitter using a hydraulic jack to raise a vehicle, wheel brace in hand" },
-  { src: "/Hero/hero-2.jpg", alt: "Close-up of a tyre being demounted from a rim using a demount tool" },
-  { src: "/Hero/hero-4.jpg", alt: "Inflation gauge connected to a tyre valve, filling the tyre with air" },
-  { src: "/Hero/hero-3.jpg", alt: "Tractor ploughing a field — ITS supplies repair materials for agricultural tyres" },
+  { src: "/hero/hero-1.jpg", alt: "Tyre technician mounting a tyre on a tyre machine using tyre levers, wearing full PPE" },
+  { src: "/hero/hero-5.jpg", alt: "Tyre fitter using a hydraulic jack to raise a vehicle, wheel brace in hand" },
+  { src: "/hero/hero-2.jpg", alt: "Close-up of a tyre being demounted from a rim using a demount tool" },
+  { src: "/hero/hero-4.jpg", alt: "Inflation gauge connected to a tyre valve, filling the tyre with air" },
+  { src: "/hero/hero-3.jpg", alt: "Tractor ploughing a field — ITS supplies repair materials for agricultural tyres" },
 ];
 
 const INTERVAL = 6000;

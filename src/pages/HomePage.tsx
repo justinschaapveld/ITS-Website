@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Phone, MapPin } from "lucide-react";
 import { productGroups } from "../data/categories";
 import { getFeaturedProducts } from "../data/products";
 
@@ -301,107 +300,132 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Customer References */}
-      <section className="py-16" style={{ background: 'var(--color-offwhite)' }}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center border border-zinc-200 bg-white rounded-lg p-10">
-            <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--color-teal)' }}>
-              Customer References
-            </div>
-            <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}>
-              References available on request
-            </h2>
-            <p className="text-zinc-500 text-sm leading-relaxed mb-6 max-w-md mx-auto">
-              We're happy to put you in touch with workshops and fleets we currently supply. Contact our team to request references.
-            </p>
-            <Link
-              to="/contact"
-              className="inline-flex items-center gap-2 px-6 py-3 font-bold uppercase tracking-wide rounded text-sm transition-colors text-white"
-              style={{ background: 'var(--color-teal)', fontFamily: 'Oswald, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-teal-dark)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-teal)')}
-            >
-              Contact Us <ArrowRight size={15} />
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Sign-off — dark spec format, inverted. Closes the page. */}
+      <section
+        className="relative py-20 md:py-28"
+        style={{
+          backgroundColor: 'var(--color-ink)',
+          borderTop: '2px solid var(--color-signal)',
+        }}
+      >
+        {/* Documentary backdrop — workshop photo at ~5–8% visibility */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(26,26,26,0.90), rgba(26,26,26,0.92)), url('/hero/hero-1.jpg')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center right',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
 
-      {/* Bottom CTA */}
-      <section className="py-14" style={{ background: 'var(--color-yellow)' }}>
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--color-teal)' }}>
-              Get Started Today
-            </div>
-            <h2
-              className="text-3xl md:text-4xl font-bold leading-tight"
-              style={{ fontFamily: 'Oswald, sans-serif', color: 'var(--color-charcoal)' }}
-            >
-              Ready to place an order?<br />Talk to our team.
-            </h2>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
-            <Link
-              to="/contact"
-              className="px-7 py-4 font-bold uppercase tracking-wide rounded transition-colors text-center text-white"
-              style={{ background: 'var(--color-teal)', fontFamily: 'Oswald, sans-serif' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-teal-dark)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-teal)')}
-            >
-              Request a Quote
-            </Link>
-            <a
-              href="tel:0387810600"
-              className="flex items-center justify-center gap-2 border-2 px-7 py-4 font-bold uppercase tracking-wide rounded transition-colors"
-              style={{ borderColor: 'var(--color-charcoal)', color: 'var(--color-charcoal)', fontFamily: 'Oswald, sans-serif' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-charcoal)'; e.currentTarget.style.color = 'var(--color-yellow)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-charcoal)'; }}
-            >
-              <Phone size={16} /> 03 8781 0600
-            </a>
-          </div>
-        </div>
-      </section>
+        <div className="relative max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[55fr_45fr] gap-12 lg:gap-16">
+            {/* Left — the conversion column */}
+            <div>
+              <div
+                className="font-mono text-[11px] uppercase mb-6"
+                style={{ color: 'var(--color-signal)', letterSpacing: '0.12em' }}
+              >
+                Ready to Order
+              </div>
 
-      {/* Single location callout */}
-      <section className="py-12" style={{ background: 'var(--color-charcoal)' }}>
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-8">
-            <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--color-yellow)' }}>
-              Our Location
+              <a
+                href="tel:0387810600"
+                className="block font-display leading-[0.95] text-[44px] sm:text-[56px] md:text-[64px] lg:text-[76px] hover:opacity-90 transition-opacity"
+                style={{
+                  color: 'var(--color-field)',
+                  letterSpacing: '0.02em',
+                  fontWeight: 800,
+                }}
+                aria-label="Call ITS on 03 8781 0600"
+              >
+                03 8781 0600
+              </a>
+
+              <p
+                className="font-sans text-[15px] md:text-[17px] leading-relaxed mt-5"
+                style={{ color: 'var(--color-steel)' }}
+              >
+                Mon–Fri 8:00am–4:00pm · Trade enquiries welcome.
+              </p>
+
+              <div className="border-t my-8 md:my-10" style={{ borderColor: '#3a3a3a' }} />
+
+              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-x-10 gap-y-4 items-start">
+                <Link
+                  to="/request-a-quote"
+                  className="font-mono text-[12px] uppercase whitespace-nowrap hover:opacity-70 transition-opacity"
+                  style={{ color: 'var(--color-signal)', letterSpacing: '0.1em' }}
+                >
+                  Request a Quote →
+                </Link>
+                <a
+                  href="mailto:its-office@itsindustrial.com.au"
+                  className="font-mono text-[12px] uppercase break-all hover:opacity-70 transition-opacity"
+                  style={{ color: 'var(--color-signal)', letterSpacing: '0.1em' }}
+                >
+                  Email its-office@itsindustrial.com.au →
+                </a>
+              </div>
+
+              <p
+                className="font-mono text-[11px] uppercase mt-8"
+                style={{ color: 'var(--color-steel)', letterSpacing: '0.1em' }}
+              >
+                Trade references available on request.
+              </p>
             </div>
-            <h2
-              className="text-2xl font-bold text-white"
-              style={{ fontFamily: 'Oswald, sans-serif' }}
-            >
-              Visit Our Dandenong South Warehouse
-            </h2>
-          </div>
-          <div className="max-w-md mx-auto border border-white/10 rounded-lg p-6 text-center">
-            <div
-              className="w-12 h-12 rounded-lg mx-auto mb-4 flex items-center justify-center"
-              style={{ background: 'var(--color-teal)' }}
-            >
-              <MapPin size={22} className="text-white" />
+
+            {/* Right — warehouse spec block */}
+            <div>
+              <h2
+                className="font-display uppercase text-[28px] md:text-[34px] lg:text-[40px] leading-none mb-6 md:mb-8"
+                style={{ color: 'var(--color-field)', letterSpacing: '0.04em', fontWeight: 800 }}
+              >
+                Warehouse
+              </h2>
+              <dl
+                className="border-y border-[#3a3a3a] divide-y divide-[#3a3a3a]"
+              >
+                {[
+                  {
+                    label: 'ADDRESS',
+                    value: (
+                      <>
+                        2 Venture Court
+                        <br />
+                        Dandenong South, Victoria 3175
+                      </>
+                    ),
+                  },
+                  { label: 'HOURS', value: 'Mon–Fri 8:00am–4:00pm' },
+                  { label: 'PHONE', value: '03 8781 0600' },
+                  { label: 'EMAIL', value: 'its-office@itsindustrial.com.au' },
+                  { label: 'ABN', value: '48 533 559 801' },
+                ].map((row) => (
+                  <div
+                    key={row.label}
+                    className="flex flex-col sm:grid sm:grid-cols-[100px_1fr] sm:items-baseline py-3 gap-y-1 sm:gap-y-0"
+                  >
+                    <dt
+                      className="font-mono text-[10.5px] uppercase"
+                      style={{ color: 'var(--color-steel)', letterSpacing: '0.1em' }}
+                    >
+                      {row.label}
+                    </dt>
+                    <dd
+                      className="font-sans text-[14.5px] md:text-[15px] leading-snug break-all sm:break-normal"
+                      style={{ color: 'var(--color-field)' }}
+                    >
+                      {row.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
-            <div
-              className="text-white font-bold text-xl mb-1"
-              style={{ fontFamily: 'Oswald, sans-serif' }}
-            >
-              Industrial Tyre Supplies
-            </div>
-            <div className="text-zinc-400 text-sm mb-1">2 Venture Court, Dandenong South VIC 3175</div>
-            <div className="text-zinc-500 text-xs mb-4">Mon–Fri 8:00am–4:00pm · 03 8781 0600</div>
-            <Link
-              to="/contact"
-              className="inline-block text-sm font-bold uppercase tracking-wide px-5 py-2.5 rounded transition-colors text-white"
-              style={{ background: 'var(--color-teal)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-teal-dark)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-teal)')}
-            >
-              Get Directions & Contact
-            </Link>
           </div>
         </div>
       </section>

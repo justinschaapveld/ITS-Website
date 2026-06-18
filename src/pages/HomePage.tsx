@@ -1,7 +1,74 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { productGroups } from "../data/categories";
 import { getFeaturedProducts } from "../data/products";
+
+// Hero load-in animation runs once per page load. Module-level flag so that
+// React Router-driven re-mounts of HomePage (nav back from a sub-page) don't
+// replay the reveal.
+let heroHasAnimated = false;
+
+// Stable list of catalogue counts for the count-up RAF loop. Module-scoped
+// so the array reference doesn't churn across renders.
+const HERO_CARD_COUNTS: number[] = productGroups.map((g) => g.categories.length);
+
+// One RAF loop driving all ten catalogue counters in parallel, with a per-card
+// stagger and cubic ease-out so each value decelerates as it lands.
+function useStaggeredCountUp(
+  targets: number[],
+  durationMs: number,
+  staggerMs: number,
+  enabled: boolean,
+): number[] {
+  const [values, setValues] = useState<number[]>(() =>
+    enabled ? targets.map(() => 0) : [...targets],
+  );
+
+  useEffect(() => {
+    if (!enabled) {
+      setValues([...targets]);
+      return;
+    }
+    let rafId = 0;
+    const start = performance.now();
+    const totalMs = (targets.length - 1) * staggerMs + durationMs;
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      const next = targets.map((target, i) => {
+        const cardElapsed = elapsed - i * staggerMs;
+        if (cardElapsed <= 0) return 0;
+        if (cardElapsed >= durationMs) return target;
+        const t = cardElapsed / durationMs;
+        const eased = 1 - Math.pow(1 - t, 3);
+        return Math.round(target * eased);
+      });
+      setValues(next);
+      if (elapsed < totalMs) rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled]);
+
+  return values;
+}
+
+// Compose the inline style for a hero element. When animate is false, returns
+// just the supplied extras (or undefined). When animate is true, layers the
+// CSS animation on top of those extras.
+function heroAnimStyle(
+  animate: boolean,
+  keyframe: string,
+  duration: number,
+  delay: number,
+  extra?: React.CSSProperties,
+): React.CSSProperties | undefined {
+  if (!animate) return extra;
+  return {
+    animation: `${keyframe} ${duration}ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms both`,
+    ...extra,
+  };
+}
 
 // Spec-format card image:
 // - Default state: SKU rendered as the visual identity on a field-coloured tile.
@@ -53,19 +120,45 @@ const heroSpecRows: { label: string; value: string }[] = [
 export default function HomePage() {
   const featured = getFeaturedProducts().slice(0, 4);
 
+  // Animate iff (a) this is the first mount in this session and (b) the user
+  // hasn't asked us not to via prefers-reduced-motion. Snapshotted on mount.
+  const [animate] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    return !heroHasAnimated;
+  });
+
+  useEffect(() => {
+    heroHasAnimated = true;
+  }, []);
+
+  const cardCounts = useStaggeredCountUp(HERO_CARD_COUNTS, 400, 60, animate);
+
   return (
     <div>
+      {/* Hero load-in keyframes. Apply via inline `animation: …` per element,
+          with fill-mode `both` so each element holds its from-state during the
+          delay and its to-state after the animation completes. */}
+      <style>{`
+        @keyframes hero-fade-up-sm { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes hero-fade-up-md { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes hero-fade-up-xs { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes hero-fade        { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes hero-rule-expand { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
+      `}</style>
+
       {/* Hero — spec-format identity card */}
       <section className="bg-field border-b border-rule">
         <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 lg:py-20">
           <div className="grid grid-cols-1 lg:grid-cols-[45fr_55fr] gap-5 lg:gap-6">
             {/* Left: identity spec block + headline + CTAs */}
             <div className="bg-white border border-rule p-6 md:p-8 lg:p-10">
-              <dl className="border-y border-rule divide-y divide-[var(--color-rule)]">
-                {heroSpecRows.map((row) => (
+              <dl className="border-t border-rule divide-y divide-[var(--color-rule)]">
+                {heroSpecRows.map((row, i) => (
                   <div
                     key={row.label}
                     className="flex flex-col sm:grid sm:grid-cols-[110px_1fr] sm:items-baseline py-2.5 gap-y-1 sm:gap-y-0"
+                    style={heroAnimStyle(animate, 'hero-fade-up-sm', 100, i * 100)}
                   >
                     <dt className="font-mono text-[10.5px] tracking-[0.1em] uppercase text-steel">
                       {row.label}
@@ -76,15 +169,23 @@ export default function HomePage() {
                   </div>
                 ))}
               </dl>
+              <div
+                className="border-t border-rule"
+                style={heroAnimStyle(animate, 'hero-rule-expand', 150, 500, { transformOrigin: 'center' })}
+                aria-hidden="true"
+              />
 
               <h1
                 className="font-display uppercase text-ink mt-8 md:mt-10 leading-[1.02] text-[2.25rem] md:text-[2.75rem] lg:text-[3.25rem]"
-                style={{ letterSpacing: '0.05em', fontWeight: 800 }}
+                style={heroAnimStyle(animate, 'hero-fade-up-md', 250, 650, { letterSpacing: '0.05em', fontWeight: 800 })}
               >
                 Tools and<br className="hidden md:inline" /> Materials for the Tyre Trade.
               </h1>
 
-              <p className="font-sans text-base md:text-[17px] leading-relaxed mt-4 md:mt-5 max-w-md" style={{ color: 'rgba(26,26,26,0.65)' }}>
+              <p
+                className="font-sans text-base md:text-[17px] leading-relaxed mt-4 md:mt-5 max-w-md"
+                style={heroAnimStyle(animate, 'hero-fade', 200, 900, { color: 'rgba(26,26,26,0.65)' })}
+              >
                 If you work on tyres and wheels, ITS has what you need.
               </p>
 
@@ -92,14 +193,14 @@ export default function HomePage() {
                 <Link
                   to="/products"
                   className="flex items-center justify-center px-6 py-3.5 font-sans font-medium uppercase text-sm hover:opacity-90 transition-opacity"
-                  style={{ background: 'var(--color-signal)', color: 'var(--color-ink)', letterSpacing: '0.06em' }}
+                  style={heroAnimStyle(animate, 'hero-fade-up-xs', 200, 1100, { background: 'var(--color-signal)', color: 'var(--color-ink)', letterSpacing: '0.06em' })}
                 >
                   View Catalogue
                 </Link>
                 <a
                   href="tel:0387810600"
                   className="flex items-center justify-center px-6 py-3.5 font-sans font-medium uppercase text-sm border transition-colors hover:text-white"
-                  style={{ borderColor: 'var(--color-teal)', color: 'var(--color-teal)', letterSpacing: '0.06em' }}
+                  style={heroAnimStyle(animate, 'hero-fade-up-xs', 200, 1200, { borderColor: 'var(--color-teal)', color: 'var(--color-teal)', letterSpacing: '0.06em' })}
                   onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-teal)'; e.currentTarget.style.color = '#fff'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-teal)'; }}
                 >
@@ -111,11 +212,12 @@ export default function HomePage() {
             {/* Right: catalogue grid — all 10 product groups */}
             <div className="bg-white border border-rule p-5 md:p-6 lg:p-8 flex flex-col">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {productGroups.map((group) => (
+                {productGroups.map((group, idx) => (
                   <Link
                     key={group.id}
                     to={`/products/${group.slug}`}
                     className="block bg-white border border-rule p-4 md:p-5 transition-colors hover:border-[var(--color-teal)]"
+                    style={heroAnimStyle(animate, 'hero-fade-up-sm', 250, idx * 60)}
                   >
                     <div
                       className="font-display uppercase text-ink text-[15px] md:text-[16px] leading-[1.1]"
@@ -124,8 +226,8 @@ export default function HomePage() {
                       {group.name}
                     </div>
                     <div className="border-t border-rule mt-2.5 mb-2.5" />
-                    <div className="font-mono text-[11px] tracking-[0.08em] uppercase text-steel">
-                      {group.categories.length} {group.categories.length === 1 ? 'category' : 'categories'}
+                    <div className="font-mono text-[11px] tracking-[0.08em] uppercase text-steel tabular-nums">
+                      {cardCounts[idx]} {group.categories.length === 1 ? 'category' : 'categories'}
                     </div>
                   </Link>
                 ))}
@@ -134,7 +236,7 @@ export default function HomePage() {
                 <Link
                   to="/products"
                   className="font-mono text-[11px] tracking-[0.12em] uppercase hover:opacity-70 transition-opacity"
-                  style={{ color: 'var(--color-teal)' }}
+                  style={heroAnimStyle(animate, 'hero-fade', 200, 700, { color: 'var(--color-teal)' })}
                 >
                   All Categories →
                 </Link>

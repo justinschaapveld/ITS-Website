@@ -1,74 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { productGroups } from "../data/categories";
 import { getFeaturedProducts } from "../data/products";
-
-// Hero load-in animation runs once per page load. Module-level flag so that
-// React Router-driven re-mounts of HomePage (nav back from a sub-page) don't
-// replay the reveal.
-let heroHasAnimated = false;
-
-// Stable list of catalogue counts for the count-up RAF loop. Module-scoped
-// so the array reference doesn't churn across renders.
-const HERO_CARD_COUNTS: number[] = productGroups.map((g) => g.categories.length);
-
-// One RAF loop driving all ten catalogue counters in parallel, with a per-card
-// stagger and cubic ease-out so each value decelerates as it lands.
-function useStaggeredCountUp(
-  targets: number[],
-  durationMs: number,
-  staggerMs: number,
-  enabled: boolean,
-): number[] {
-  const [values, setValues] = useState<number[]>(() =>
-    enabled ? targets.map(() => 0) : [...targets],
-  );
-
-  useEffect(() => {
-    if (!enabled) {
-      setValues([...targets]);
-      return;
-    }
-    let rafId = 0;
-    const start = performance.now();
-    const totalMs = (targets.length - 1) * staggerMs + durationMs;
-    const tick = () => {
-      const elapsed = performance.now() - start;
-      const next = targets.map((target, i) => {
-        const cardElapsed = elapsed - i * staggerMs;
-        if (cardElapsed <= 0) return 0;
-        if (cardElapsed >= durationMs) return target;
-        const t = cardElapsed / durationMs;
-        const eased = 1 - Math.pow(1 - t, 3);
-        return Math.round(target * eased);
-      });
-      setValues(next);
-      if (elapsed < totalMs) rafId = requestAnimationFrame(tick);
-    };
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
-
-  return values;
-}
-
-// Compose the inline style for a hero element. When animate is false, returns
-// just the supplied extras (or undefined). When animate is true, layers the
-// CSS animation on top of those extras.
-function heroAnimStyle(
-  animate: boolean,
-  keyframe: string,
-  duration: number,
-  delay: number,
-  extra?: React.CSSProperties,
-): React.CSSProperties | undefined {
-  if (!animate) return extra;
-  return {
-    animation: `${keyframe} ${duration}ms cubic-bezier(0.22, 1, 0.36, 1) ${delay}ms both`,
-    ...extra,
-  };
-}
 
 // Spec-format card image:
 // - Default state: SKU rendered as the visual identity on a field-coloured tile.
@@ -108,140 +41,141 @@ const specials: { label: string; text: string; to?: string }[] = [
   { label: "CATALOGUE", text: "Browse the full product catalogue", to: "/products" },
 ];
 
-// Confirmed company data — used in the hero spec block.
-const heroSpecRows: { label: string; value: string }[] = [
-  { label: "SUPPLIER", value: "Industrial Tyre Supplies" },
-  { label: "FOUNDED",  value: "1978" },
-  { label: "ABN",      value: "48 533 559 801" },
-  { label: "BASE",     value: "Dandenong South, Victoria" },
-  { label: "DISPATCH", value: "Australia-wide" },
+// Editorial order for the category-tiles section below the hero banner.
+// Slug references productGroups in src/data/categories.ts. Label is the
+// display string for the tile heading (allows a small re-spelling for tile 7).
+const HERO_TILE_ORDER: { slug: string; label: string }[] = [
+  { slug: 'tyre-fitting-handling', label: 'Tyre Fitting & Handling' },
+  { slug: 'valves-accessories',    label: 'Valves & Accessories' },
+  { slug: 'tyre-tube-repair',      label: 'Tyre & Tube Repair' },
+  { slug: 'jacking-lifting',       label: 'Jacking & Lifting' },
+  { slug: 'balance-weights',       label: 'Balance Weights' },
+  { slug: 'air-tools-airlines',    label: 'Air Tools & Airlines' },
+  { slug: 'other-workshop',        label: 'Other / Workshop' },
 ];
 
 export default function HomePage() {
   const featured = getFeaturedProducts().slice(0, 4);
 
-  // Animate iff (a) this is the first mount in this session and (b) the user
-  // hasn't asked us not to via prefers-reduced-motion. Snapshotted on mount.
-  const [animate] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
-    return !heroHasAnimated;
-  });
-
-  useEffect(() => {
-    heroHasAnimated = true;
-  }, []);
-
-  const cardCounts = useStaggeredCountUp(HERO_CARD_COUNTS, 400, 60, animate);
-
   return (
     <div>
-      {/* Hero load-in keyframes. Apply via inline `animation: …` per element,
-          with fill-mode `both` so each element holds its from-state during the
-          delay and its to-state after the animation completes. */}
-      <style>{`
-        @keyframes hero-fade-up-sm { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes hero-fade-up-md { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes hero-fade-up-xs { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes hero-fade        { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes hero-rule-expand { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
-      `}</style>
+      {/* Hero — full-bleed banner with overlay headline + CTAs */}
+      <section
+        className="relative bg-ink min-h-[420px] sm:min-h-[480px] md:min-h-[540px] lg:min-h-[600px] flex items-center"
+        style={{
+          backgroundImage: "url('/hero/hero-4.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
+        }}
+      >
+        {/* Dark gradient overlay — strongest on the left where the copy sits */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, rgba(0,0,0,0.6), rgba(0,0,0,0.25) 60%, rgba(0,0,0,0.05))',
+          }}
+        />
 
-      {/* Hero — spec-format identity card */}
-      <section className="bg-field border-b border-rule">
-        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 lg:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-[45fr_55fr] gap-5 lg:gap-6">
-            {/* Left: identity spec block + headline + CTAs */}
-            <div className="bg-white border border-rule p-6 md:p-8 lg:p-10">
-              <dl className="border-t border-rule divide-y divide-[var(--color-rule)]">
-                {heroSpecRows.map((row, i) => (
-                  <div
-                    key={row.label}
-                    className="flex flex-col sm:grid sm:grid-cols-[110px_1fr] sm:items-baseline py-2.5 gap-y-1 sm:gap-y-0"
-                    style={heroAnimStyle(animate, 'hero-fade-up-sm', 100, i * 100)}
+        {/* Overlay content — no card chrome, sits directly on the image */}
+        <div className="relative w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 py-12 md:py-16">
+          <div className="max-w-3xl">
+            <h1
+              className="font-display uppercase leading-[1.02] text-[32px] sm:text-[40px] md:text-[48px] lg:text-[58px] mb-5 md:mb-6"
+              style={{
+                color: 'var(--color-field)',
+                letterSpacing: '0.02em',
+                fontWeight: 800,
+              }}
+            >
+              Tools and Materials<br className="hidden md:inline" /> for the Tyre Trade.
+            </h1>
+            <p
+              className="font-sans text-base md:text-[18px] lg:text-[19px] leading-relaxed mb-7 md:mb-8 max-w-xl"
+              style={{ color: 'rgba(237,238,240,0.85)' }}
+            >
+              If you work on tyres and wheels, ITS has what you need.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link
+                to="/products"
+                className="flex items-center justify-center px-7 py-3.5 font-sans font-medium uppercase text-sm hover:opacity-90 transition-opacity"
+                style={{
+                  background: 'var(--color-signal)',
+                  color: 'var(--color-ink)',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                View Catalogue
+              </Link>
+              <a
+                href="tel:0387810600"
+                className="flex items-center justify-center px-7 py-3.5 font-sans font-medium uppercase text-sm border transition-colors"
+                style={{
+                  borderColor: 'rgba(237,238,240,0.6)',
+                  color: 'var(--color-field)',
+                  letterSpacing: '0.05em',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(237,238,240,0.1)';
+                  e.currentTarget.style.borderColor = 'rgba(237,238,240,1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'rgba(237,238,240,0.6)';
+                }}
+              >
+                Call 03 8781 0600
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Category tiles — 4×2 editorial grid */}
+      <section className="bg-field py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+            {HERO_TILE_ORDER.map((tile) => {
+              const group = productGroups.find((g) => g.slug === tile.slug);
+              if (!group) return null;
+              const count = group.categories.length;
+              return (
+                <Link
+                  key={tile.slug}
+                  to={`/products/${tile.slug}`}
+                  className="block bg-white border border-rule p-5 md:p-6 transition-colors hover:border-[var(--color-teal)]"
+                >
+                  <h3
+                    className="font-display uppercase text-ink text-[18px] md:text-[20px] leading-[1.1]"
+                    style={{ letterSpacing: '0.04em', fontWeight: 800 }}
                   >
-                    <dt className="font-mono text-[10.5px] tracking-[0.1em] uppercase text-steel">
-                      {row.label}
-                    </dt>
-                    <dd className="font-sans text-[15px] leading-snug text-ink">
-                      {row.value}
-                    </dd>
+                    {tile.label}
+                  </h3>
+                  <div className="border-t border-rule mt-3 mb-3" />
+                  <div className="font-mono text-[11px] tracking-[0.08em] uppercase text-steel">
+                    {count} {count === 1 ? 'category' : 'categories'}
                   </div>
-                ))}
-              </dl>
-              <div
-                className="border-t border-rule"
-                style={heroAnimStyle(animate, 'hero-rule-expand', 150, 500, { transformOrigin: 'center' })}
-                aria-hidden="true"
-              />
-
-              <h1
-                className="font-display uppercase text-ink mt-8 md:mt-10 leading-[1.02] text-[2.25rem] md:text-[2.75rem] lg:text-[3.25rem]"
-                style={heroAnimStyle(animate, 'hero-fade-up-md', 250, 650, { letterSpacing: '0.05em', fontWeight: 800 })}
-              >
-                Tools and<br className="hidden md:inline" /> Materials for the Tyre Trade.
-              </h1>
-
-              <p
-                className="font-sans text-base md:text-[17px] leading-relaxed mt-4 md:mt-5 max-w-md"
-                style={heroAnimStyle(animate, 'hero-fade', 200, 900, { color: 'rgba(26,26,26,0.65)' })}
-              >
-                If you work on tyres and wheels, ITS has what you need.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 mt-7 md:mt-8">
-                <Link
-                  to="/products"
-                  className="flex items-center justify-center px-6 py-3.5 font-sans font-medium uppercase text-sm hover:opacity-90 transition-opacity"
-                  style={heroAnimStyle(animate, 'hero-fade-up-xs', 200, 1100, { background: 'var(--color-signal)', color: 'var(--color-ink)', letterSpacing: '0.06em' })}
-                >
-                  View Catalogue
                 </Link>
-                <a
-                  href="tel:0387810600"
-                  className="flex items-center justify-center px-6 py-3.5 font-sans font-medium uppercase text-sm border transition-colors hover:text-white"
-                  style={heroAnimStyle(animate, 'hero-fade-up-xs', 200, 1200, { borderColor: 'var(--color-teal)', color: 'var(--color-teal)', letterSpacing: '0.06em' })}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-teal)'; e.currentTarget.style.color = '#fff'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-teal)'; }}
-                >
-                  Call 03 8781 0600
-                </a>
-              </div>
-            </div>
-
-            {/* Right: catalogue grid — all 10 product groups */}
-            <div className="bg-white border border-rule p-5 md:p-6 lg:p-8 flex flex-col">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {productGroups.map((group, idx) => (
-                  <Link
-                    key={group.id}
-                    to={`/products/${group.slug}`}
-                    className="block bg-white border border-rule p-4 md:p-5 transition-colors hover:border-[var(--color-teal)]"
-                    style={heroAnimStyle(animate, 'hero-fade-up-sm', 250, idx * 60)}
-                  >
-                    <div
-                      className="font-display uppercase text-ink text-[15px] md:text-[16px] leading-[1.1]"
-                      style={{ letterSpacing: '0.04em', fontWeight: 800 }}
-                    >
-                      {group.name}
-                    </div>
-                    <div className="border-t border-rule mt-2.5 mb-2.5" />
-                    <div className="font-mono text-[11px] tracking-[0.08em] uppercase text-steel tabular-nums">
-                      {cardCounts[idx]} {group.categories.length === 1 ? 'category' : 'categories'}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-              <div className="mt-5 md:mt-6 flex justify-end">
-                <Link
-                  to="/products"
-                  className="font-mono text-[11px] tracking-[0.12em] uppercase hover:opacity-70 transition-opacity"
-                  style={heroAnimStyle(animate, 'hero-fade', 200, 700, { color: 'var(--color-teal)' })}
-                >
-                  All Categories →
-                </Link>
-              </div>
-            </div>
+              );
+            })}
+            {/* Tile 8 — All Categories wayfinding tile */}
+            <Link
+              to="/products"
+              className="block bg-white border border-rule p-5 md:p-6 transition-colors hover:border-[var(--color-teal)]"
+            >
+              <h3
+                className="font-display uppercase text-[18px] md:text-[20px] leading-[1.1]"
+                style={{
+                  color: 'var(--color-teal)',
+                  letterSpacing: '0.04em',
+                  fontWeight: 800,
+                }}
+              >
+                All Categories →
+              </h3>
+            </Link>
           </div>
         </div>
       </section>

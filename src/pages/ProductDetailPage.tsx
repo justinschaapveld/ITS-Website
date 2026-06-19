@@ -91,7 +91,7 @@ export default function ProductDetailPage() {
     }
 
     let cancelled = false;
-    const base = `/products/${product.sku.toLowerCase()}`;
+    const base = `/products/${product.sku}`;
     const found = [product.image];
     setGallery([...found]);
 

@@ -29,7 +29,7 @@ export const products: Product[] = [
     subcategorySlug: "contour-wheels",
     shortDescription: "Precision contour carbide wheel for tyre sidewall buffing",
     description: "Heavy-duty tungsten carbide contour wheel designed for professional tyre repair operations. Provides consistent buffing across sidewall contours for superior patch adhesion.",
-    image: "/products/car-cw-100.jpg",
+    image: "/products/CAR-CW-100.jpg",
     specs: [
       { label: "Diameter", value: "100mm" },
       { label: "Arbor Size", value: "12mm" },
@@ -84,7 +84,7 @@ export const products: Product[] = [
     subcategorySlug: "radial-patches",
     shortDescription: "Multi-layer radial patch for passenger and light truck tyres",
     description: "Professional-grade multi-layer radial tyre repair patch suitable for passenger car, 4WD and light truck tyres. Includes cushion gum layer for superior bonding.",
-    image: "/products/rad-p-110.jpg",
+    image: "/products/RAD-P-110.jpg",
     specs: [
       { label: "Dimensions", value: "110 x 80mm" },
       { label: "Type", value: "Radial Multi-Layer" },
@@ -122,7 +122,7 @@ export const products: Product[] = [
     subcategorySlug: "click-torque",
     shortDescription: "Heavy-duty click torque wrench for truck wheel nuts",
     description: "Professional NORBAR click-type torque wrench ideal for torquing truck and bus wheel nuts. Accurate to ±4% clockwise for reliable torque application every time.",
-    image: "/products/tw-nor-800.jpg",
+    image: "/products/TW-NOR-800.jpg",
     specs: [
       { label: "Drive Size", value: "3/4\"" },
       { label: "Torque Range", value: "200–800 Nm" },

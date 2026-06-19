@@ -6,14 +6,21 @@ import { getFeaturedProducts } from "../data/products";
 import { ValveIcon } from "../components/icons/ValveIcon";
 import { BottleJackIcon } from "../components/icons/BottleJackIcon";
 import { RepairPatchIcon } from "../components/icons/RepairPatchIcon";
+import { ImpactWrenchIcon } from "../components/icons/ImpactWrenchIcon";
+import { TyreLeverIcon } from "../components/icons/TyreLeverIcon";
+import { BalanceWeightIcon } from "../components/icons/BalanceWeightIcon";
+import { ToolChestIcon } from "../components/icons/ToolChestIcon";
 
-// Test pass — three custom line-art icons on a subset of tiles.
-// Slugs not in this map render without an icon (intentional during the
-// comparison phase).
+// Custom line-art icons, one per category tile.
+// Slugs not in this map render without an icon (e.g. the All Categories tile).
 const TILE_ICONS: Record<string, (props: SVGProps<SVGSVGElement>) => JSX.Element> = {
-  'tyre-tube-repair':   RepairPatchIcon,
-  'valves-accessories': ValveIcon,
-  'jacking-lifting':    BottleJackIcon,
+  'tyre-fitting-handling': TyreLeverIcon,
+  'valves-accessories':    ValveIcon,
+  'tyre-tube-repair':      RepairPatchIcon,
+  'jacking-lifting':       BottleJackIcon,
+  'balance-weights':       BalanceWeightIcon,
+  'air-tools-airlines':    ImpactWrenchIcon,
+  'other-workshop':        ToolChestIcon,
 };
 
 // Spec-format card image:

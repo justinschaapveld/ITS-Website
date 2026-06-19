@@ -37,7 +37,7 @@ function ProductImage({ src, sku, alt }: { src?: string; sku: string; alt: strin
 }
 
 const specials: { label: string; text: string; to?: string }[] = [
-  { label: "TRADE PRICING", text: "Volume orders — ask about trade pricing" },
+  { label: "TRADE PRICING", text: "Volume orders — ask about trade pricing", to: "/contact" },
   { label: "CATALOGUE", text: "Browse the full product catalogue", to: "/products" },
 ];
 
@@ -59,6 +59,36 @@ export default function HomePage() {
 
   return (
     <div>
+      {/* Specials marquee — site-wide announcement strip, directly under the header.
+          Border on the bottom only; the header already supplies a 7px teal divider above. */}
+      <section className="border-b border-zinc-700 overflow-hidden" style={{ background: '#222' }}>
+        <div className="flex animate-scroll whitespace-nowrap" aria-label="Trade information">
+          {[...specials, ...specials, ...specials].map((s, i) => {
+            const inner = (
+              <>
+                <span
+                  className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded"
+                  style={{ background: 'var(--color-yellow)', color: 'var(--color-charcoal)' }}
+                >
+                  {s.label}
+                </span>
+                <span className="text-zinc-300 text-sm font-medium">{s.text}</span>
+                <span className="text-zinc-600 mx-4 text-xl" aria-hidden="true">|</span>
+              </>
+            );
+            return s.to ? (
+              <Link key={i} to={s.to} className="inline-flex items-center gap-3 px-8 py-3.5 flex-shrink-0 hover:opacity-80 transition-opacity">
+                {inner}
+              </Link>
+            ) : (
+              <div key={i} className="inline-flex items-center gap-3 px-8 py-3.5 flex-shrink-0">
+                {inner}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* Hero — full-bleed banner with overlay headline + CTAs */}
       <section
         className="relative bg-ink min-h-[420px] sm:min-h-[480px] md:min-h-[540px] lg:min-h-[600px] flex items-center"
@@ -177,35 +207,6 @@ export default function HomePage() {
               </h3>
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Specials strip */}
-      <section className="border-y border-zinc-700 overflow-hidden" style={{ background: '#222' }}>
-        <div className="flex animate-scroll whitespace-nowrap" aria-label="Trade information">
-          {[...specials, ...specials, ...specials].map((s, i) => {
-            const inner = (
-              <>
-                <span
-                  className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded"
-                  style={{ background: 'var(--color-yellow)', color: 'var(--color-charcoal)' }}
-                >
-                  {s.label}
-                </span>
-                <span className="text-zinc-300 text-sm font-medium">{s.text}</span>
-                <span className="text-zinc-600 mx-4 text-xl" aria-hidden="true">|</span>
-              </>
-            );
-            return s.to ? (
-              <Link key={i} to={s.to} className="inline-flex items-center gap-3 px-8 py-3.5 flex-shrink-0 hover:opacity-80 transition-opacity">
-                {inner}
-              </Link>
-            ) : (
-              <div key={i} className="inline-flex items-center gap-3 px-8 py-3.5 flex-shrink-0">
-                {inner}
-              </div>
-            );
-          })}
         </div>
       </section>
 

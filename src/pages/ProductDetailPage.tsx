@@ -9,7 +9,15 @@ import { getProductById, getProductsByCategory } from "../data/products";
 import Breadcrumbs from "../components/Breadcrumbs";
 import QuoteRequestModal from "../components/QuoteRequestModal";
 
-function buildGallery(image: string): string[] {
+// Local images live at /products/<sku>.jpg, with optional extra shots at
+// /products/<sku>-1.jpg, -2.jpg, … (auto-detected by probing — see effect below).
+function isLocalImage(image: string): boolean {
+  return image.startsWith("/products/");
+}
+
+// Legacy Unsplash placeholders fake a multi-shot gallery via URL params.
+// Real local images don't support this, so they're handled separately.
+function unsplashGallery(image: string): string[] {
   const base = image.replace(/\?.*$/, "");
   return [
     `${base}?w=1000&q=85`,
@@ -17,6 +25,10 @@ function buildGallery(image: string): string[] {
     `${base}?w=800&q=80&flip=h`,
     `${base}?w=800&q=80&bri=15`,
   ];
+}
+
+function initialGallery(image: string): string[] {
+  return isLocalImage(image) ? [image] : unsplashGallery(image);
 }
 
 const TRUST_ITEMS = [
@@ -58,7 +70,49 @@ export default function ProductDetailPage() {
   const [stickyVisible, setStickyVisible] = useState(false);
   const heroCTARef = useRef<HTMLDivElement>(null);
 
-  const gallery = product ? buildGallery(product.image) : [];
+  const [gallery, setGallery] = useState<string[]>(
+    product ? initialGallery(product.image) : []
+  );
+
+  // Build the gallery for the active product. Unsplash placeholders use the
+  // synchronous param trick; local images start with /products/<sku>.jpg and
+  // then probe for extra shots (<sku>-1.jpg, -2.jpg, …), appending each that
+  // loads and stopping at the first gap. No data field, no broken images.
+  useEffect(() => {
+    if (!product) {
+      setGallery([]);
+      return;
+    }
+    setActiveImage(0);
+
+    if (!isLocalImage(product.image)) {
+      setGallery(unsplashGallery(product.image));
+      return;
+    }
+
+    let cancelled = false;
+    const base = `/products/${product.sku.toLowerCase()}`;
+    const found = [product.image];
+    setGallery([...found]);
+
+    const probe = (n: number) => {
+      const url = `${base}-${n}.jpg`;
+      const img = new Image();
+      img.onload = () => {
+        if (cancelled) return;
+        found.push(url);
+        setGallery([...found]);
+        probe(n + 1);
+      };
+      img.onerror = () => {};
+      img.src = url;
+    };
+    probe(1);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [product]);
 
   useEffect(() => {
     const el = heroCTARef.current;
@@ -168,7 +222,7 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            <div className="flex gap-3 mt-3">
+            <div className={`gap-3 mt-3 ${gallery.length > 1 ? "flex" : "hidden"}`}>
               {gallery.map((src, i) => (
                 <button
                   key={i}
@@ -487,7 +541,7 @@ export default function ProductDetailPage() {
             className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
             onClick={e => e.stopPropagation()}
           />
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 gap-2 ${gallery.length > 1 ? "flex" : "hidden"}`}>
             {gallery.map((src, i) => (
               <button
                 key={i}

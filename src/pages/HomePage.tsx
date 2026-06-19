@@ -1,7 +1,20 @@
 import { useState } from "react";
+import type { SVGProps } from "react";
 import { Link } from "react-router-dom";
 import { productGroups } from "../data/categories";
 import { getFeaturedProducts } from "../data/products";
+import { ValveIcon } from "../components/icons/ValveIcon";
+import { BottleJackIcon } from "../components/icons/BottleJackIcon";
+import { RepairPatchIcon } from "../components/icons/RepairPatchIcon";
+
+// Test pass — three custom line-art icons on a subset of tiles.
+// Slugs not in this map render without an icon (intentional during the
+// comparison phase).
+const TILE_ICONS: Record<string, (props: SVGProps<SVGSVGElement>) => JSX.Element> = {
+  'tyre-tube-repair':   RepairPatchIcon,
+  'valves-accessories': ValveIcon,
+  'jacking-lifting':    BottleJackIcon,
+};
 
 // Spec-format card image:
 // - Default state: SKU rendered as the visual identity on a field-coloured tile.
@@ -171,12 +184,16 @@ export default function HomePage() {
               const group = productGroups.find((g) => g.slug === tile.slug);
               if (!group) return null;
               const count = group.categories.length;
+              const Icon = TILE_ICONS[tile.slug];
               return (
                 <Link
                   key={tile.slug}
                   to={`/products/${tile.slug}`}
-                  className="block bg-white border border-rule p-5 md:p-6 transition-colors hover:border-[var(--color-teal)]"
+                  className={`${Icon ? 'group ' : ''}block bg-white border border-rule p-5 md:p-6 transition-colors hover:border-[var(--color-teal)]`}
                 >
+                  {Icon && (
+                    <Icon className="w-10 h-10 md:w-12 md:h-12 mb-3 text-steel group-hover:text-[var(--color-teal)] transition-colors" />
+                  )}
                   <h3
                     className="font-display uppercase text-ink text-[18px] md:text-[20px] leading-[1.1]"
                     style={{ letterSpacing: '0.04em', fontWeight: 800 }}

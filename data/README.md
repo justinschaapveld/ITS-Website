@@ -1,36 +1,40 @@
 # Product data — Excel workflow
 
-`products.xlsx` is the **editing surface** for the product catalogue. The site
-itself reads `src/data/products.ts`; these scripts round-trip between the two so
-you can manage content in a spreadsheet instead of editing TypeScript by hand.
+`data/products.xlsx` is the **source of truth** for the product catalogue. The
+site reads `src/data/products.ts`, which is now **generated from the spreadsheet**
+— you don't edit it by hand.
+
+The import runs automatically:
+- **During `npm run dev`** — a watcher re-imports whenever you save the spreadsheet.
+- **At build time** (`npm run build`, including Netlify) — via the `prebuild` hook.
 
 ```
-src/data/products.ts   ──  npm run products:export  ──▶  data/products.xlsx
-data/products.xlsx     ──  npm run products:import  ──▶  src/data/products.ts
+data/products.xlsx  ──(auto: dev watcher + build hook)──▶  src/data/products.ts  ──▶  site
 ```
 
-## Typical workflow
+## Everyday workflow
 
-1. **Export** the current data to Excel:
+1. Start the dev server (once): `npm run dev`.
+2. **Edit `data/products.xlsx`** in Excel / Numbers / LibreOffice (Products sheet),
+   then **save**. The watcher imports it and your local preview (http://localhost:5173)
+   refreshes automatically.
+   - If something is invalid, the terminal prints the problems and the site is left
+     unchanged — fix the sheet and save again.
+3. **Publish:** commit your changes and push.
    ```bash
-   npm run products:export
+   git add data/products.xlsx src/data/products.ts
+   git commit -m "Update product data"
+   git push
    ```
-   This (re)creates `data/products.xlsx` from `src/data/products.ts`.
+   Netlify re-imports the spreadsheet at build time and deploys.
 
-2. **Edit** `data/products.xlsx` in Excel / Numbers / LibreOffice. Edit the
-   **Products** sheet. Save and close.
+> A git **push is always required** to update the live site — a static site can't
+> update itself from the spreadsheet without a deploy.
 
-3. **Import** your changes back into the TypeScript file:
-   ```bash
-   npm run products:import
-   ```
-   If anything is invalid, it prints every problem and writes nothing. Fix the
-   sheet and run it again.
-
-4. Review the change with `git diff src/data/products.ts`, then build/commit as usual.
-
-> Always **export before a fresh editing session** so the spreadsheet matches the
-> current code (e.g. if the TS file changed since your last export).
+### Manual commands (rarely needed)
+- `npm run products:export` — rebuild the spreadsheet **from** `products.ts`
+  (use only if `products.ts` was changed directly, e.g. by another tool).
+- `npm run products:import` — import once without the watcher.
 
 ## The "Products" sheet — columns
 
@@ -81,6 +85,10 @@ shots) and rebuild. See `PROJECT_OVERVIEW.md` → "Product image system".
 
 ## Notes / limitations
 
+- **Don't hand-edit `src/data/products.ts`** — it's generated from the spreadsheet
+  and will be overwritten on the next save/dev start/build. Edit the spreadsheet
+  instead. (If you must change the TS directly, run `npm run products:export`
+  afterwards to sync the spreadsheet back.)
 - The import regenerates the `rawProducts` array in `products.ts` and preserves
   the rest of the file (types, image overlay, query helpers). The organisational
   `// --- Section ---` comments in the array are not round-tripped.

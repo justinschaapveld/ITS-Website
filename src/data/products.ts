@@ -22,7 +22,6 @@ export interface Product {
 }
 
 const rawProducts: Product[] = [
-  // --- Carbides ---
   {
     id: "p001",
     sku: "CAR-CW-100",
@@ -76,7 +75,6 @@ const rawProducts: Product[] = [
       { label: "Max RPM", value: "2,800 RPM" },
     ],
   },
-  // --- Radial Patches ---
   {
     id: "p004",
     sku: "RAD-P-110",
@@ -114,7 +112,6 @@ const rawProducts: Product[] = [
       { label: "Pack Quantity", value: "5 per box" },
     ],
   },
-  // --- Torque Wrenches ---
   {
     id: "p006",
     sku: "TW-NOR-800",
@@ -152,7 +149,6 @@ const rawProducts: Product[] = [
       { label: "Scale Division", value: "2 Nm" },
     ],
   },
-  // --- Impact Wrenches ---
   {
     id: "p008",
     sku: "AIR-IW-34-1200",
@@ -208,7 +204,6 @@ const rawProducts: Product[] = [
       { label: "Weight", value: "4.2 kg" },
     ],
   },
-  // --- Air Bottle Jacks ---
   {
     id: "p011",
     sku: "JK-AIR-20T",
@@ -246,7 +241,6 @@ const rawProducts: Product[] = [
       { label: "Air Pressure", value: "7 bar max" },
     ],
   },
-  // --- TPMS ---
   {
     id: "p013",
     sku: "TPM-SEN-UNI-01",
@@ -285,7 +279,6 @@ const rawProducts: Product[] = [
     ],
     featured: true,
   },
-  // --- Balance Weights ---
   {
     id: "p015",
     sku: "BW-CLIP-CAR-5G",
@@ -322,7 +315,6 @@ const rawProducts: Product[] = [
       { label: "Pack Quantity", value: "36 rolls per box" },
     ],
   },
-  // --- Cordless Tools ---
   {
     id: "p017",
     sku: "CORD-IW-18V-KIT",
@@ -342,7 +334,6 @@ const rawProducts: Product[] = [
     ],
     featured: true,
   },
-  // --- Tyre Levers ---
   {
     id: "p018",
     sku: "TL-STEEL-450",
@@ -361,7 +352,6 @@ const rawProducts: Product[] = [
       { label: "Pack Quantity", value: "3 per set" },
     ],
   },
-  // --- Snap-In Valves ---
   {
     id: "p019",
     sku: "VAL-TR413-100",
@@ -398,7 +388,6 @@ const rawProducts: Product[] = [
       { label: "Pack Quantity", value: "100 per box" },
     ],
   },
-  // --- Wheel Chocks ---
   {
     id: "p021",
     sku: "WC-RUB-LARGE",
@@ -417,7 +406,6 @@ const rawProducts: Product[] = [
       { label: "Standard", value: "AS/NZS compliant" },
     ],
   },
-  // --- Tyre Sealant ---
   {
     id: "p022",
     sku: "SEAL-PREV-5L",

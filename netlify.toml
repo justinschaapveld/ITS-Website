@@ -1,0 +1,6 @@
+# Ensure Netlify runs `npm run build`, whose prebuild hook imports
+# data/products.xlsx -> src/data/products.ts before building. This is what lets a
+# committed spreadsheet change deploy without a manual import step.
+[build]
+  command = "npm run build"
+  publish = "dist"

@@ -6,7 +6,7 @@ product range, company information, and quote-request paths. It is a static
 single-page application with no backend — all content lives in typed data modules.
 
 > This document is a snapshot of the project structure and conventions as a handoff
-> reference. Last updated after the dropdown/image/featured work landed (`e2c5308`).
+> reference. Last updated after the spreadsheet-driven product data workflow landed (`ca889b9`).
 
 ---
 
@@ -20,6 +20,7 @@ single-page application with no backend — all content lives in typed data modu
 | Routing | React Router (`react-router-dom ^7.15.1`) |
 | Styling | Tailwind CSS (`^3.4.1`) + CSS custom properties in `src/index.css` |
 | Icons | `lucide-react` (UI) + hand-built SVG icons (category tiles) |
+| Data tooling | SheetJS (`xlsx`, dev-only) for the product spreadsheet round-trip |
 | Hosting | Netlify (static, SPA) |
 
 > `@supabase/supabase-js` is listed in dependencies but is **not** currently used —
@@ -36,10 +37,15 @@ npm run build      # production build to dist/
 npm run preview    # serve the production build locally
 npm run typecheck  # tsc --noEmit (type safety; NOT run by the Netlify build)
 npm run lint       # eslint
+
+npm run products:export  # src/data/products.ts -> data/products.xlsx
+npm run products:import  # data/products.xlsx -> src/data/products.ts (validated)
 ```
 
-`predev` and `prebuild` hooks automatically run `npm run gen:images` first
-(see [Product image system](#product-image-system)).
+`predev` and `prebuild` hooks automatically run the spreadsheet import **and** the
+image-map generator first, so `products.ts` is regenerated from `data/products.xlsx`
+before dev/build (see [Product data — Excel workflow](#product-data--excel-workflow)
+and [Product image system](#product-image-system)).
 
 ---
 
@@ -52,8 +58,14 @@ ITS-Website/
 │  ├─ ITS_Logo.png, logo.png   # brand
 │  ├─ hero/hero-1..5.jpg       # hero/backdrop imagery (lowercase folder — see note)
 │  └─ products/<SKU>.jpg       # product photos, filename = SKU (uppercase)
+├─ data/
+│  ├─ products.xlsx            # SOURCE OF TRUTH for product content (committed)
+│  └─ README.md                # the Excel workflow, documented
 ├─ scripts/
-│  └─ generate-product-images.mjs   # scans public/products/, emits src/data/productImages.ts
+│  ├─ generate-product-images.mjs   # scans public/products/, emits src/data/productImages.ts
+│  ├─ export-products.mjs            # products.ts -> data/products.xlsx
+│  ├─ import-products.mjs            # data/products.xlsx -> products.ts (validated)
+│  └─ products-shared.mjs           # shared parse/serialize/validate helpers
 ├─ src/
 │  ├─ main.tsx                 # React entry
 │  ├─ App.tsx                  # routes (see Routing)
@@ -69,11 +81,12 @@ ITS-Website/
 │  │  └─ icons/                # 7 custom SVG category icons (see Custom icons)
 │  ├─ data/
 │  │  ├─ categories.ts         # product taxonomy (groups → categories → subcategories)
-│  │  ├─ products.ts           # product records + image auto-overlay + query helpers
+│  │  ├─ products.ts           # GENERATED from data/products.xlsx (do not hand-edit)
 │  │  └─ productImages.ts      # AUTO-GENERATED SKU→photo map (do not edit by hand)
 │  └─ pages/                   # one component per route (13 pages)
+├─ netlify.toml                # pins build to `npm run build` (so prebuild import runs)
 ├─ tailwind.config.js          # theme tokens + animate-scroll keyframe
-├─ vite.config.ts
+├─ vite.config.ts              # React + dev watcher that auto-imports the spreadsheet
 └─ package.json
 ```
 
@@ -119,8 +132,31 @@ group/category/subcategory slugs, descriptions, `image`, optional `images[]`,
 raw records with **local photos overlaid by SKU** (see below). Helpers:
 `getProductById`, `getProductsByCategory`, `getProductsByGroup`,
 `getFeaturedProducts`, `searchProducts`.
+**This file is generated from `data/products.xlsx`** — edit the spreadsheet, not the TS.
 
 **`productImages.ts`** — auto-generated; never edit by hand.
+
+---
+
+## Product data — Excel workflow
+
+`data/products.xlsx` is the **committed source of truth** for product content;
+`src/data/products.ts` is generated from it. Full details in
+[`data/README.md`](data/README.md). In short:
+
+- **Editing:** open `data/products.xlsx` (Products sheet). With `npm run dev`
+  running, a Vite dev plugin re-imports on save and reloads the preview — no
+  manual command. The import also runs via the `predev`/`prebuild` hooks.
+- **Publishing:** `git add -A && git commit && git push`. `netlify.toml` pins the
+  deploy to `npm run build`, whose `prebuild` re-imports the spreadsheet, so the
+  committed workbook drives the live data. (A push is still required — static host.)
+- **Validation:** the import checks required fields, unique SKU/ID, valid nested
+  category slugs, Y/N featured, and spec-line format; on any error it lists every
+  problem and writes nothing.
+- **Not in the sheet:** images (owned by the SKU-filename system), gallery
+  `images[]`, and `tags`. Specs live one-per-line (`Label: Value`) in a single cell.
+- `scripts/export-products.mjs` regenerates the workbook **from** `products.ts`
+  (use only if the TS was changed directly, e.g. by another tool).
 
 ---
 
@@ -229,13 +265,28 @@ or stats):
 
 ---
 
+## Working conventions
+
+- Commit before any substantial change. Each design pass is its own commit
+  with a clear message; the working tree should be clean before starting new work.
+- Plan-then-build for substantive design or feature work. Sketch the approach
+  in prose before writing code, especially for creative work (icons, motion).
+- Review in the browser before committing visual changes. Don't auto-commit.
+- Mono discipline: IBM Plex Mono only on data-origin content (SKUs, field labels,
+  spec values, mono eyebrows). Never on buttons, headlines, or prose.
+- No fabricated facts. If a stat, certification, testimonial, or business
+  detail isn't in the Confirmed business facts section, don't add it.
+
+---
+
 ## Deployment
 
 - Host: **Netlify** (connected to the GitHub repo; pushes to `main` auto-deploy).
-- Build: `npm run build` → `dist/`. The `prebuild` hook regenerates the image map.
+- Build: `npm run build` → `dist/` (pinned via `netlify.toml`). The `prebuild` hook
+  imports `data/products.xlsx` → `products.ts` and regenerates the image map.
 - SPA routing handled by `public/_redirects`.
-- Note: the Netlify build runs `vite build` (no `tsc`), so type errors won't fail
-  the deploy — run `npm run typecheck` locally to catch them.
+- Note: the build does not run `tsc`, so type errors won't fail the deploy —
+  run `npm run typecheck` locally to catch them.
 
 ---
 

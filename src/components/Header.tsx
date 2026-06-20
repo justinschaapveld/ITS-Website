@@ -54,8 +54,28 @@ export default function Header() {
     setMegaOpen(true);
   }
 
-  function scheduleMegaClose() {
-    closeTimerRef.current = setTimeout(() => setMegaOpen(false), 120);
+  function scheduleMegaClose(e?: React.MouseEvent) {
+    // Guard against the open-render race: when the pointer first enters the
+    // trigger, React hasn't yet flipped the panel to pointer-events:auto, so a
+    // quick move toward the panel (typical when approaching from below) fires a
+    // spurious mouseleave through the still-click-through panel. If the pointer
+    // is actually within the panel's rectangle, keep the menu open.
+    if (e && megaRef.current) {
+      const panel = megaRef.current.querySelector("[data-mega-panel]");
+      if (panel) {
+        const r = panel.getBoundingClientRect();
+        if (
+          e.clientX >= r.left &&
+          e.clientX <= r.right &&
+          e.clientY >= r.top - 6 &&
+          e.clientY <= r.bottom
+        ) {
+          return;
+        }
+      }
+    }
+    // Hover-intent delay: tolerate a brief overshoot past the button.
+    closeTimerRef.current = setTimeout(() => setMegaOpen(false), 250);
   }
 
   return (
@@ -290,6 +310,7 @@ function MegaMenu({ open, onClose, onMouseEnter, onMouseLeave }: MegaMenuProps) 
   return (
     <div
       className="absolute left-1/2 -translate-x-1/2 mt-0 pt-3 z-50"
+      data-mega-panel
       style={{
         width: 'min(900px, 90vw)',
         opacity: open ? 1 : 0,

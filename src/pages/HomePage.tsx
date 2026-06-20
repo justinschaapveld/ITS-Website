@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { SVGProps } from "react";
 import { Link } from "react-router-dom";
 import { productGroups } from "../data/categories";
-import { getFeaturedProducts } from "../data/products";
+import { products } from "../data/products";
 import { ValveIcon } from "../components/icons/ValveIcon";
 import { BottleJackIcon } from "../components/icons/BottleJackIcon";
 import { RepairPatchIcon } from "../components/icons/RepairPatchIcon";
@@ -45,12 +45,12 @@ function ProductImage({ src, sku, alt }: { src?: string; sku: string; alt: strin
   }
 
   return (
-    <div className="aspect-[4/3] bg-field border-b border-rule overflow-hidden">
+    <div className="aspect-[4/3] bg-white p-3 border-b border-rule overflow-hidden">
       <img
         src={src}
         alt={alt}
         onError={() => setErrored(true)}
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain"
       />
     </div>
   );
@@ -64,6 +64,11 @@ const specials: { label: string; text: string; to?: string }[] = [
 // Editorial order for the category-tiles section below the hero banner.
 // Slug references productGroups in src/data/categories.ts. Label is the
 // display string for the tile heading (allows a small re-spelling for tile 7).
+// Home "Featured Products" row — explicit, ordered selection by SKU. This is
+// independent of the per-product `featured` badge flag (which applies to more
+// products than fit here), so the row shows exactly these four, in this order.
+const FEATURED_SKUS = ["TPM-TOOL-PRO", "RAD-P-110", "TW-NOR-800", "AIR-IW-34-1200"];
+
 const HERO_TILE_ORDER: { slug: string; label: string }[] = [
   { slug: 'tyre-fitting-handling', label: 'Tyre Fitting & Handling' },
   { slug: 'valves-accessories',    label: 'Valves & Accessories' },
@@ -75,7 +80,9 @@ const HERO_TILE_ORDER: { slug: string; label: string }[] = [
 ];
 
 export default function HomePage() {
-  const featured = getFeaturedProducts().slice(0, 4);
+  const featured = FEATURED_SKUS
+    .map((sku) => products.find((p) => p.sku === sku))
+    .filter((p): p is (typeof products)[number] => p !== undefined);
 
   return (
     <div>

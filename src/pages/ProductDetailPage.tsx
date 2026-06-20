@@ -429,12 +429,12 @@ export default function ProductDetailPage() {
                   onMouseLeave={e => (e.currentTarget.style.borderColor = "#e4e4e7")}
                 >
                   <Link to={`/products/${p.groupSlug}/${p.categorySlug}/${p.subcategorySlug}/${p.id}`} className="block">
-                    <div className="h-40 overflow-hidden bg-zinc-100">
+                    <div className="h-40 overflow-hidden bg-white p-3">
                       <img
                         src={p.image}
                         alt={p.name}
                         loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                     <div className="px-4 pt-3 pb-2">
@@ -510,7 +510,7 @@ export default function ProductDetailPage() {
                 className="w-12 h-10 rounded border-2 overflow-hidden transition-all"
                 style={activeImage === i ? { borderColor: "var(--color-yellow)" } : { borderColor: "rgba(255,255,255,0.3)" }}
               >
-                <img src={src} alt="" className="w-full h-full object-cover" />
+                <img src={src} alt="" className="w-full h-full object-contain p-1" />
               </button>
             ))}
           </div>

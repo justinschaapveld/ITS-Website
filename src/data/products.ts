@@ -40,7 +40,6 @@ const rawProducts: Product[] = [
       { label: "Material", value: "Tungsten Carbide" },
       { label: "Max RPM", value: "3,000 RPM" },
     ],
-    featured: true,
   },
   {
     id: "p002",
@@ -284,6 +283,7 @@ const rawProducts: Product[] = [
       { label: "Battery", value: "3.7V Li-ion, 2000mAh" },
       { label: "Update Method", value: "USB / Wi-Fi OTA" },
     ],
+    featured: true,
   },
   // --- Balance Weights ---
   {

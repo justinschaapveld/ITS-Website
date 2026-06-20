@@ -34,8 +34,8 @@ export default function SearchPage() {
                   onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-teal)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = '#e4e4e7')}
                 >
-                  <div className="h-40 overflow-hidden bg-zinc-200">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="h-40 overflow-hidden bg-white p-3">
+                    <img src={product.image} alt={product.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" />
                   </div>
                   <div className="p-5">
                     <div className="text-xs text-zinc-400 font-semibold uppercase tracking-widest mb-1">{product.sku}</div>

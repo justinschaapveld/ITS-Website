@@ -12,6 +12,11 @@ export const productImages: Record<string, string[]> = {
   "RAD-P-110": [
     "/products/RAD-P-110.jpg"
   ],
+  "TPM-SEN-UNI-01": [
+    "/products/TPM-SEN-UNI-01.jpg",
+    "/products/TPM-SEN-UNI-01-2.jpg",
+    "/products/TPM-SEN-UNI-01-3.jpg"
+  ],
   "TPM-TOOL-PRO": [
     "/products/TPM-TOOL-PRO.jpg",
     "/products/TPM-TOOL-PRO-2.jpg",

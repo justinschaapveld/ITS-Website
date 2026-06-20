@@ -153,7 +153,7 @@ export default function ProductDetailPage() {
           {/* LEFT — Gallery */}
           <div className="lg:w-[55%] flex-shrink-0">
             <div
-              className="relative rounded-xl overflow-hidden border border-zinc-200 bg-white cursor-zoom-in"
+              className="relative rounded-xl overflow-hidden border border-zinc-200 bg-white cursor-zoom-in p-4"
               style={{ aspectRatio: "4/3" }}
               onClick={() => setLightboxOpen(true)}
               role="button"
@@ -164,7 +164,7 @@ export default function ProductDetailPage() {
               <img
                 src={gallery[activeImage]}
                 alt={product.name}
-                className="w-full h-full object-cover transition-opacity duration-300"
+                className="w-full h-full object-contain transition-opacity duration-300"
               />
               <div
                 className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
@@ -188,12 +188,12 @@ export default function ProductDetailPage() {
                 <button
                   key={i}
                   onClick={() => setActiveImage(i)}
-                  className="relative w-20 h-16 rounded-lg overflow-hidden border-2 transition-all duration-150 flex-shrink-0"
+                  className="relative w-20 h-16 rounded-lg overflow-hidden border-2 transition-all duration-150 flex-shrink-0 bg-white"
                   style={activeImage === i ? { borderColor: "var(--color-teal)" } : { borderColor: "#e4e4e7" }}
                   aria-label={`View image ${i + 1}`}
                   aria-pressed={activeImage === i}
                 >
-                  <img src={src} alt="" className="w-full h-full object-cover" />
+                  <img src={src} alt="" className="w-full h-full object-contain p-1" />
                   {activeImage !== i && <div className="absolute inset-0 bg-white/30" />}
                 </button>
               ))}

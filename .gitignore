@@ -21,3 +21,8 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Generated editing workbook — regenerate with `npm run products:export`
+data/products.xlsx
+# Office lock/temp files
+~$*

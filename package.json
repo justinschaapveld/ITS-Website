@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "gen:images": "node scripts/generate-product-images.mjs",
+    "predev": "node scripts/generate-product-images.mjs",
+    "prebuild": "node scripts/generate-product-images.mjs",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",

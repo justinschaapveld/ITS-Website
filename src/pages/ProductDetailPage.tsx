@@ -9,14 +9,10 @@ import { getProductById, getProductsByCategory } from "../data/products";
 import Breadcrumbs from "../components/Breadcrumbs";
 import QuoteRequestModal from "../components/QuoteRequestModal";
 
-// Local images live at /products/<sku>.jpg, with optional extra shots at
-// /products/<sku>-1.jpg, -2.jpg, … (auto-detected by probing — see effect below).
-function isLocalImage(image: string): boolean {
-  return image.startsWith("/products/");
-}
-
-// Legacy Unsplash placeholders fake a multi-shot gallery via URL params.
-// Real local images don't support this, so they're handled separately.
+// Real product photos come from product.images, auto-detected from
+// public/products/ by SKU (see scripts/generate-product-images.mjs): the primary
+// at <SKU>.jpg plus any <SKU>-1.jpg, -2.jpg … extras. Products without a local
+// photo fall back to faking a multi-shot gallery from their Unsplash placeholder.
 function unsplashGallery(image: string): string[] {
   const base = image.replace(/\?.*$/, "");
   return [
@@ -25,10 +21,6 @@ function unsplashGallery(image: string): string[] {
     `${base}?w=800&q=80&flip=h`,
     `${base}?w=800&q=80&bri=15`,
   ];
-}
-
-function initialGallery(image: string): string[] {
-  return isLocalImage(image) ? [image] : unsplashGallery(image);
 }
 
 const TRUST_ITEMS = [
@@ -70,48 +62,17 @@ export default function ProductDetailPage() {
   const [stickyVisible, setStickyVisible] = useState(false);
   const heroCTARef = useRef<HTMLDivElement>(null);
 
-  const [gallery, setGallery] = useState<string[]>(
-    product ? initialGallery(product.image) : []
-  );
+  // Auto-detected local photos when present, else the faked Unsplash gallery.
+  const gallery =
+    product && product.images && product.images.length > 0
+      ? product.images
+      : product
+      ? unsplashGallery(product.image)
+      : [];
 
-  // Build the gallery for the active product. Unsplash placeholders use the
-  // synchronous param trick; local images start with /products/<sku>.jpg and
-  // then probe for extra shots (<sku>-1.jpg, -2.jpg, …), appending each that
-  // loads and stopping at the first gap. No data field, no broken images.
+  // Reset to the first image whenever the product changes.
   useEffect(() => {
-    if (!product) {
-      setGallery([]);
-      return;
-    }
     setActiveImage(0);
-
-    if (!isLocalImage(product.image)) {
-      setGallery(unsplashGallery(product.image));
-      return;
-    }
-
-    let cancelled = false;
-    const base = `/products/${product.sku}`;
-    const found = [product.image];
-    setGallery([...found]);
-
-    const probe = (n: number) => {
-      const url = `${base}-${n}.jpg`;
-      const img = new Image();
-      img.onload = () => {
-        if (cancelled) return;
-        found.push(url);
-        setGallery([...found]);
-        probe(n + 1);
-      };
-      img.onerror = () => {};
-      img.src = url;
-    };
-    probe(1);
-
-    return () => {
-      cancelled = true;
-    };
   }, [product]);
 
   useEffect(() => {

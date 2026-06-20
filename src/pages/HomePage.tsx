@@ -13,7 +13,7 @@ import { ToolChestIcon } from "../components/icons/ToolChestIcon";
 
 // Custom line-art icons, one per category tile.
 // Slugs not in this map render without an icon (e.g. the All Categories tile).
-const TILE_ICONS: Record<string, (props: SVGProps<SVGSVGElement>) => JSX.Element> = {
+const TILE_ICONS: Record<string, ((props: SVGProps<SVGSVGElement>) => JSX.Element) | undefined> = {
   'tyre-fitting-handling': TyreLeverIcon,
   'valves-accessories':    ValveIcon,
   'tyre-tube-repair':      RepairPatchIcon,

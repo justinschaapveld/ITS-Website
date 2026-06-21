@@ -8,20 +8,12 @@ import { getGroupBySlug, getCategoryBySlug, getSubcategoryBySlug } from "../data
 import { getProductById, getProductsByCategory } from "../data/products";
 import Breadcrumbs from "../components/Breadcrumbs";
 import QuoteRequestModal from "../components/QuoteRequestModal";
+import ProductImage, { ImageComingSoon, isUsableImage } from "../components/ProductImage";
 
-// Real product photos come from product.images, auto-detected from
-// public/products/ by SKU (see scripts/generate-product-images.mjs): the primary
-// at <SKU>.jpg plus any <SKU>-1.jpg, -2.jpg … extras. Products without a local
-// photo fall back to faking a multi-shot gallery from their Unsplash placeholder.
-function unsplashGallery(image: string): string[] {
-  const base = image.replace(/\?.*$/, "");
-  return [
-    `${base}?w=1000&q=85`,
-    `${base}?w=800&q=80&sat=-30`,
-    `${base}?w=800&q=80&flip=h`,
-    `${base}?w=800&q=80&bri=15`,
-  ];
-}
+// Real product photos come from product.images, auto-detected from public/products/
+// by SKU (see scripts/generate-product-images.mjs): the primary at <SKU>.jpg plus
+// any <SKU>-1.jpg, -2.jpg … extras. Products with no local photo show the
+// "Image coming soon" placeholder instead of a gallery.
 
 const TRUST_ITEMS = [
   { icon: Package, text: "Trade pricing available" },
@@ -62,13 +54,14 @@ export default function ProductDetailPage() {
   const [stickyVisible, setStickyVisible] = useState(false);
   const heroCTARef = useRef<HTMLDivElement>(null);
 
-  // Auto-detected local photos when present, else the faked Unsplash gallery.
-  const gallery =
+  // Real local photos only — primary + any extra shots. No photo ⇒ placeholder.
+  const photos =
     product && product.images && product.images.length > 0
       ? product.images
-      : product
-      ? unsplashGallery(product.image)
+      : product && isUsableImage(product.image)
+      ? [product.image]
       : [];
+  const hasPhotos = photos.length > 0;
 
   // Reset to the first image whenever the product changes.
   useEffect(() => {
@@ -153,26 +146,32 @@ export default function ProductDetailPage() {
           {/* LEFT — Gallery */}
           <div className="lg:w-[55%] flex-shrink-0">
             <div
-              className="relative rounded-xl overflow-hidden border border-zinc-200 bg-white cursor-zoom-in p-4"
+              className={`relative rounded-xl overflow-hidden border border-zinc-200 bg-white p-4 ${hasPhotos ? "cursor-zoom-in" : ""}`}
               style={{ aspectRatio: "4/3" }}
-              onClick={() => setLightboxOpen(true)}
-              role="button"
-              tabIndex={0}
-              aria-label="View full-size image"
-              onKeyDown={e => e.key === "Enter" && setLightboxOpen(true)}
+              onClick={hasPhotos ? () => setLightboxOpen(true) : undefined}
+              role={hasPhotos ? "button" : undefined}
+              tabIndex={hasPhotos ? 0 : undefined}
+              aria-label={hasPhotos ? "View full-size image" : undefined}
+              onKeyDown={hasPhotos ? (e) => e.key === "Enter" && setLightboxOpen(true) : undefined}
             >
-              <img
-                src={gallery[activeImage]}
-                alt={product.name}
-                className="w-full h-full object-contain transition-opacity duration-300"
-              />
-              <div
-                className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: "rgba(0,0,0,0.45)" }}
-                aria-hidden="true"
-              >
-                <ZoomIn size={15} className="text-white" />
-              </div>
+              {hasPhotos ? (
+                <img
+                  src={photos[activeImage]}
+                  alt={product.name}
+                  className="w-full h-full object-contain transition-opacity duration-300"
+                />
+              ) : (
+                <ImageComingSoon alt={product.name} className="absolute inset-0" />
+              )}
+              {hasPhotos && (
+                <div
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ background: "rgba(0,0,0,0.45)" }}
+                  aria-hidden="true"
+                >
+                  <ZoomIn size={15} className="text-white" />
+                </div>
+              )}
               {product.featured && (
                 <div
                   className="absolute top-3 left-3 px-2.5 py-1 text-xs font-bold uppercase tracking-wide rounded"
@@ -183,8 +182,8 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            <div className={`gap-3 mt-3 ${gallery.length > 1 ? "flex" : "hidden"}`}>
-              {gallery.map((src, i) => (
+            <div className={`gap-3 mt-3 ${photos.length > 1 ? "flex" : "hidden"}`}>
+              {photos.map((src, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImage(i)}
@@ -325,12 +324,7 @@ export default function ProductDetailPage() {
           <div className="bg-white border border-t-0 border-zinc-200 rounded-b-xl p-7">
             {activeTab === "Description" && (
               <div className="space-y-4 text-zinc-600 text-sm leading-relaxed max-w-3xl">
-                <p>
-                  {product.description} Engineered for professional workshop use, this product meets or exceeds OEM specifications and is backed by our technical team who can advise on the correct application for your specific requirements.
-                </p>
-                <p>
-                  ITS has supplied {category.name.toLowerCase()} products to Australian tyre workshops, fleet operators and road transport companies for over 30 years. Every product in our range is sourced from manufacturers with proven quality management systems, and we hold comprehensive technical documentation for all stocked lines.
-                </p>
+                {product.description && <p>{product.description}</p>}
                 <p>
                   Whether you're running a single-bay workshop or a multi-location fleet operation, our team can help you select the right product variant, pack size and quantity to suit your volume and budget requirements. Contact us for trade pricing, bulk discounts and account setup.
                 </p>
@@ -338,6 +332,9 @@ export default function ProductDetailPage() {
             )}
 
             {activeTab === "Specifications" && (
+              product.specs.length === 0 ? (
+                <p className="text-sm text-zinc-500">Specifications coming soon.</p>
+              ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -347,13 +344,7 @@ export default function ProductDetailPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      ...product.specs,
-                      { label: "Pack Size", value: "Each / Box of 10 / Box of 25 (contact for options)" },
-                      { label: "Country of Manufacture", value: "Germany / USA (brand dependent)" },
-                      { label: "Warranty", value: "12 months from date of purchase" },
-                      { label: "Min. Order Qty", value: "1 unit — volume pricing available" },
-                    ].map((spec, i) => (
+                    {product.specs.map((spec, i) => (
                       <tr key={i} style={{ background: i % 2 === 0 ? "#f9fafb" : "#fff" }}>
                         <td className="px-5 py-3 font-bold text-zinc-500 uppercase tracking-wide text-xs">{spec.label}</td>
                         <td className="px-5 py-3 text-zinc-700">{spec.value}</td>
@@ -362,6 +353,7 @@ export default function ProductDetailPage() {
                   </tbody>
                 </table>
               </div>
+              )
             )}
 
             {activeTab === "Technical Documents" && (
@@ -429,14 +421,12 @@ export default function ProductDetailPage() {
                   onMouseLeave={e => (e.currentTarget.style.borderColor = "#e4e4e7")}
                 >
                   <Link to={`/products/${p.groupSlug}/${p.categorySlug}/${p.subcategorySlug}/${p.id}`} className="block">
-                    <div className="h-40 overflow-hidden bg-white p-3">
-                      <img
-                        src={p.image}
-                        alt={p.name}
-                        loading="lazy"
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
+                    <ProductImage
+                      src={p.image}
+                      alt={p.name}
+                      className="h-40 p-3"
+                      imgClassName="group-hover:scale-105 transition-transform duration-500"
+                    />
                     <div className="px-4 pt-3 pb-2">
                       <div className="text-xs text-zinc-400 font-mono font-semibold uppercase tracking-widest mb-1">{p.sku}</div>
                       <h3
@@ -497,13 +487,13 @@ export default function ProductDetailPage() {
             <X size={22} />
           </button>
           <img
-            src={gallery[activeImage]}
+            src={photos[activeImage]}
             alt={product.name}
             className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
             onClick={e => e.stopPropagation()}
           />
-          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 gap-2 ${gallery.length > 1 ? "flex" : "hidden"}`}>
-            {gallery.map((src, i) => (
+          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 gap-2 ${photos.length > 1 ? "flex" : "hidden"}`}>
+            {photos.map((src, i) => (
               <button
                 key={i}
                 onClick={e => { e.stopPropagation(); setActiveImage(i); }}

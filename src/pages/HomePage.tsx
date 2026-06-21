@@ -1,8 +1,8 @@
-import { useState } from "react";
 import type { SVGProps } from "react";
 import { Link } from "react-router-dom";
 import { productGroups } from "../data/categories";
 import { products } from "../data/products";
+import FeaturedCarousel from "../components/FeaturedCarousel";
 import { ValveIcon } from "../components/icons/ValveIcon";
 import { BottleJackIcon } from "../components/icons/BottleJackIcon";
 import { RepairPatchIcon } from "../components/icons/RepairPatchIcon";
@@ -23,39 +23,6 @@ const TILE_ICONS: Record<string, ((props: SVGProps<SVGSVGElement>) => JSX.Elemen
   'other-workshop':        ToolChestIcon,
 };
 
-// Spec-format card image:
-// - Default state: SKU rendered as the visual identity on a field-coloured tile.
-// - Override: if a product has a real image URL that loads, show it instead.
-// All Unsplash URLs in the seed data are treated as placeholders (Bolt leftovers, not real product photos).
-function ProductImage({ src, sku, alt }: { src?: string; sku: string; alt: string }) {
-  const isPlaceholder = !src || src.includes('images.unsplash.com');
-  const [errored, setErrored] = useState(false);
-
-  if (isPlaceholder || errored) {
-    return (
-      <div className="aspect-[4/3] flex items-center justify-center bg-field border-b border-rule">
-        <div
-          className="font-mono text-steel leading-none text-[26px] sm:text-[28px] md:text-[30px]"
-          style={{ letterSpacing: '0.04em' }}
-        >
-          {sku}
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="aspect-[4/3] bg-white p-3 border-b border-rule overflow-hidden">
-      <img
-        src={src}
-        alt={alt}
-        onError={() => setErrored(true)}
-        className="w-full h-full object-contain"
-      />
-    </div>
-  );
-}
-
 const specials: { label: string; text: string; to?: string }[] = [
   { label: "TRADE PRICING", text: "Volume orders — ask about trade pricing", to: "/contact" },
   { label: "CATALOGUE", text: "Browse the full product catalogue", to: "/products" },
@@ -64,11 +31,6 @@ const specials: { label: string; text: string; to?: string }[] = [
 // Editorial order for the category-tiles section below the hero banner.
 // Slug references productGroups in src/data/categories.ts. Label is the
 // display string for the tile heading (allows a small re-spelling for tile 7).
-// Home "Featured Products" row — explicit, ordered selection by SKU. This is
-// independent of the per-product `featured` badge flag (which applies to more
-// products than fit here), so the row shows exactly these four, in this order.
-const FEATURED_SKUS = ["TPM-TOOL-PRO", "RAD-P-110", "TW-NOR-800", "AIR-IW-34-1200"];
-
 const HERO_TILE_ORDER: { slug: string; label: string }[] = [
   { slug: 'tyre-fitting-handling', label: 'Tyre Fitting & Handling' },
   { slug: 'valves-accessories',    label: 'Valves & Accessories' },
@@ -80,9 +42,8 @@ const HERO_TILE_ORDER: { slug: string; label: string }[] = [
 ];
 
 export default function HomePage() {
-  const featured = FEATURED_SKUS
-    .map((sku) => products.find((p) => p.sku === sku))
-    .filter((p): p is (typeof products)[number] => p !== undefined);
+  // Driven by the "Featured (Y/N)" column in data/products.xlsx (product.featured).
+  const featured = products.filter((p) => p.featured);
 
   return (
     <div>
@@ -267,52 +228,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featured.map((product) => {
-                const group = productGroups.find((g) => g.slug === product.groupSlug);
-                const category = group?.categories.find((c) => c.slug === product.categorySlug);
-                const groupName = group?.name ?? '';
-                const breadcrumb = category ? `${groupName} / ${category.name}` : groupName;
-                return (
-                  <Link
-                    key={product.id}
-                    to={`/products/${product.groupSlug}/${product.categorySlug}/${product.subcategorySlug}/${product.id}`}
-                    className="flex flex-col bg-white border border-rule transition-colors hover:border-[var(--color-teal)]"
-                  >
-                    <ProductImage
-                      src={product.image}
-                      sku={product.sku}
-                      alt={product.name}
-                    />
-                    <div className="flex flex-col flex-1 px-5 py-5">
-                      <div
-                        className="font-mono text-[11px] uppercase text-steel mb-2"
-                        style={{ letterSpacing: '0.05em' }}
-                      >
-                        {product.sku}
-                      </div>
-                      <h3
-                        className="font-display uppercase text-ink text-[18px] md:text-[20px] leading-[1.1] mb-2 line-clamp-2"
-                        style={{ letterSpacing: '0.03em', fontWeight: 800 }}
-                      >
-                        {product.name}
-                      </h3>
-                      <div className="font-sans text-[12.5px] leading-snug text-steel mb-5">
-                        {breadcrumb}
-                      </div>
-                      <div className="mt-auto">
-                        <span
-                          className="font-mono text-[11px] uppercase"
-                          style={{ color: 'var(--color-teal)', letterSpacing: '0.05em' }}
-                        >
-                          Contact for Pricing →
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+            <FeaturedCarousel items={featured} />
           </div>
         </section>
       )}

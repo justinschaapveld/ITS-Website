@@ -6,6 +6,7 @@ import {
 import { getGroupBySlug } from "../data/categories";
 import { getProductsByGroup } from "../data/products";
 import Breadcrumbs from "../components/Breadcrumbs";
+import ProductImage from "../components/ProductImage";
 
 const groupIcons: Record<string, React.ElementType> = {
   "tyre-tube-repair": Wrench,
@@ -166,14 +167,12 @@ export default function GroupPage() {
                   onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-teal)')}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = '#e4e4e7')}
                 >
-                  <div className="h-40 overflow-hidden bg-white p-3">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      loading="lazy"
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
+                  <ProductImage
+                    src={product.image}
+                    alt={product.name}
+                    className="h-40 p-3"
+                    imgClassName="group-hover:scale-105 transition-transform duration-500"
+                  />
                   <div className="p-4">
                     <div className="text-xs text-zinc-400 font-mono font-semibold uppercase tracking-widest mb-1">
                       {product.sku}

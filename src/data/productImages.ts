@@ -1417,9 +1417,16 @@ export const productImages: Record<string, string[]> = {
   "5624122": [
     "/products/5624122.jpg"
   ],
+  "5624138": [
+    "/products/5624138.jpg",
+    "/products/5624138-2.jpg"
+  ],
   "5624146": [
     "/products/5624146.jpg",
     "/products/5624146-2.jpg"
+  ],
+  "5624149": [
+    "/products/5624149.jpg"
   ],
   "5624150": [
     "/products/5624150.jpg"

@@ -5,8 +5,9 @@ import path from 'node:path';
 
 // Dev-only: watch data/products.xlsx and auto-run the import (+ image map) when
 // it's saved, so editing the spreadsheet updates the local preview without
-// running `npm run products:import` by hand. On a validation error the import
-// writes nothing and the failure is logged; the running site is left untouched.
+// running `npm run products:import` by hand. The import publishes every valid row
+// and reports any it had to skip; this watcher surfaces those skips (and any hard
+// failure) in the browser error overlay so a bad row is never silently lost.
 function productsSpreadsheetWatcher(): Plugin {
   return {
     name: 'products-spreadsheet-watcher',
@@ -25,10 +26,23 @@ function productsSpreadsheetWatcher(): Plugin {
             { cwd: process.cwd() },
             (err, stdout, stderr) => {
               if (err) {
-                server.config.logger.error(
-                  '[products] import failed — site NOT updated:\n' + (stderr || stdout),
-                  { timestamp: true }
-                );
+                // Hard failure (missing file/sheet, crash) — nothing was published.
+                const detail = (stderr || stdout || 'unknown error').trim();
+                server.config.logger.error('[products] import failed — site NOT updated:\n' + detail, { timestamp: true });
+                server.ws.send({ type: 'error', err: { message: '[products] import failed — site NOT updated.\n\n' + detail, stack: '' } });
+                return;
+              }
+              // Valid rows were published. Surface any skipped rows in the overlay so
+              // the user can't miss them; otherwise reload with the changes.
+              const m = stdout.match(/__IMPORT_SKIPPED__(.*)/);
+              if (m) {
+                let lines = [];
+                try { lines = JSON.parse(m[1]); } catch { /* ignore */ }
+                const message =
+                  `⚠ ${lines.length} product row(s) skipped — invalid data in data/products.xlsx.\n` +
+                  `The rest of the site WAS updated. Fix these rows and re-save:\n\n• ` + lines.join('\n• ');
+                server.config.logger.warn('[products] ' + message, { timestamp: true });
+                server.ws.send({ type: 'error', err: { message, stack: '' } });
               } else {
                 server.config.logger.info('[products] imported — reloading', { timestamp: true });
                 server.ws.send({ type: 'full-reload' });

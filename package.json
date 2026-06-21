@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "gen:images": "node scripts/generate-product-images.mjs",
+    "products:sync": "node scripts/sync-inventory.mjs",
     "products:export": "node scripts/export-products.mjs",
     "products:import": "node scripts/import-products.mjs",
     "predev": "node scripts/import-products.mjs && node scripts/generate-product-images.mjs",

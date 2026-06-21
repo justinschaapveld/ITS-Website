@@ -24,3 +24,17 @@ dist-ssr
 
 # Office lock/temp files
 ~$*
+
+# Off-site product images — inventory photos for items not on the site (no recent
+# sales). Kept locally so they're ready if a product is switched on, but never
+# committed or deployed. Move a file back into public/products/ to use it.
+_offsite-product-images/
+
+# Intermediate payloads for scripts/apply-drafts.mjs (drafts, category moves, …)
+data/_*.json
+
+# Local agent config
+.claude/
+
+# Timestamped spreadsheet/data backups
+data/_backups/

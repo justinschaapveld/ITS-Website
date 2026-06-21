@@ -1,8 +1,11 @@
 // Import data/products.xlsx -> src/data/products.ts
 //
-// Validates every row first. On ANY error it prints all problems and exits
-// non-zero WITHOUT writing the file (no partial writes). On success it rewrites
-// only the `rawProducts` array, preserving the rest of products.ts.
+// Validates per row: a row with a disqualifying problem (missing field, invalid
+// category combo, duplicate SKU/ID) is SKIPPED and reported, while every valid row
+// is still published — so one bad row can't silently block the whole catalogue.
+// Soft issues (a stray Featured value, a malformed spec line) just warn. It rewrites
+// only the `rawProducts` array, preserving the rest of products.ts. (A truly fatal
+// problem — missing file/sheet — still exits non-zero.)
 //
 // The Image Path column is intentionally absent from the sheet, so each product's
 // existing `image` value is carried forward from the current products.ts (matched
@@ -41,72 +44,96 @@ rows.forEach((r) => noteId(r.ID));
 let nextNum = maxNum + 1;
 const genId = () => `p${String(nextNum++).padStart(3, "0")}`;
 
-const errors = [];
+const skipped = [];   // rows omitted from the site (invalid) — { row, sku, reasons[] }
+const warnings = [];  // soft issues that did NOT drop the row
 const seenSku = new Map();
 const seenId = new Map();
 const out = [];
+let skippedOffSite = 0;
 
 const TRUE = new Set(["y", "yes", "true", "1"]);
 const FALSE = new Set(["n", "no", "false", "0", ""]);
+// Only an explicit "no" hides a product; blank/absent keeps it on-site (back-compat
+// with the original sheet, which had no "Add to site" column).
+const OFF_SITE = new Set(["n", "no", "false", "0"]);
+const ADD_COL = "Add to site (Y/N)";
+const hasAddCol = rows.length > 0 && Object.prototype.hasOwnProperty.call(rows[0], ADD_COL);
 
 rows.forEach((r, i) => {
   const row = i + 2; // 1-based incl header
   const get = (k) => String(r[k] ?? "").trim();
-  const need = (k, field) => { const v = get(k); if (!v) errors.push(`Row ${row}: missing required "${field}"`); return v; };
 
-  const sku = need("SKU", "SKU");
-  const name = need("Product Name", "Product Name");
-  const shortDescription = need("Short Description", "Short Description");
-  const description = need("Description", "Description");
-  const groupSlug = need("Group Slug", "Group Slug");
-  const categorySlug = need("Category Slug", "Category Slug");
-  const subcategorySlug = need("Subcategory Slug", "Subcategory Slug");
+  // Off-site rows never reach products.ts (and aren't validated).
+  if (hasAddCol && OFF_SITE.has(get(ADD_COL).toLowerCase())) { skippedOffSite++; return; }
 
-  // Category slug validation (only if the slugs were provided)
-  const g = groupMap.get(groupSlug);
-  if (groupSlug && !g) {
-    errors.push(`Row ${row} (SKU ${sku || "?"}): unknown Group Slug "${groupSlug}"`);
-  } else if (g) {
-    const c = g.cats.get(categorySlug);
-    if (categorySlug && !c) {
-      errors.push(`Row ${row} (SKU ${sku || "?"}): Category Slug "${categorySlug}" not in group "${groupSlug}"`);
-    } else if (c && subcategorySlug && !c.subs.has(subcategorySlug)) {
-      errors.push(`Row ${row} (SKU ${sku || "?"}): Subcategory Slug "${subcategorySlug}" not in category "${categorySlug}"`);
+  const sku = get("SKU");
+  // A "Name Override" wins over the inventory-derived "Product Name" when present.
+  const name = get("Name Override") || get("Product Name");
+  const groupSlug = get("Group Slug");
+  const categorySlug = get("Category Slug");
+  const subcategorySlug = get("Subcategory Slug");
+
+  // Disqualifying problems — collected per row so ONE bad row is skipped, not the
+  // whole import. The valid rows are still published.
+  const reasons = [];
+  if (!sku) reasons.push("missing SKU");
+  if (!name) reasons.push("missing Product Name");
+  if (!groupSlug) reasons.push("missing Group Slug");
+  if (!categorySlug) reasons.push("missing Category Slug");
+  if (!subcategorySlug) reasons.push("missing Subcategory Slug");
+
+  if (groupSlug && categorySlug && subcategorySlug) {
+    const g = groupMap.get(groupSlug);
+    if (!g) reasons.push(`unknown Group Slug "${groupSlug}"`);
+    else {
+      const c = g.cats.get(categorySlug);
+      if (!c) reasons.push(`Category "${categorySlug}" not in group "${groupSlug}"`);
+      else if (!c.subs.has(subcategorySlug)) reasons.push(`Subcategory "${subcategorySlug}" not in category "${categorySlug}"`);
     }
   }
 
-  // Featured
+  const id = get("ID") || genId();
+  if (sku && seenSku.has(sku)) reasons.push(`duplicate SKU (also row ${seenSku.get(sku)})`);
+  if (get("ID") && seenId.has(id)) reasons.push(`duplicate ID "${id}" (also row ${seenId.get(id)})`);
+
+  if (reasons.length) { skipped.push({ row, sku, reasons }); return; }
+
+  // Soft issues — keep the product, just warn.
   const fRaw = get("Featured (Y/N)").toLowerCase();
   let featured = false;
   if (TRUE.has(fRaw)) featured = true;
-  else if (!FALSE.has(fRaw)) errors.push(`Row ${row} (SKU ${sku || "?"}): Featured must be Y or N (got "${get("Featured (Y/N)")}")`);
+  else if (!FALSE.has(fRaw)) warnings.push(`Row ${row} (SKU ${sku}): Featured "${get("Featured (Y/N)")}" isn't Y/N — treated as N`);
 
-  // Specs
   const { specs, errors: specErrs } = cellToSpecs(r[SPECS_COL]);
-  specErrs.forEach((e) => errors.push(`Row ${row} (SKU ${sku || "?"}): ${e}`));
+  specErrs.forEach((e) => warnings.push(`Row ${row} (SKU ${sku}): ${e} — that spec line dropped`));
 
-  // ID (auto-assign if blank) + uniqueness
-  let id = get("ID") || genId();
-  if (seenId.has(id)) errors.push(`Row ${row}: duplicate ID "${id}" (also row ${seenId.get(id)})`);
-  else seenId.set(id, row);
-  if (sku) {
-    if (seenSku.has(sku)) errors.push(`Row ${row}: duplicate SKU "${sku}" (also row ${seenSku.get(sku)})`);
-    else seenSku.set(sku, row);
-  }
-
-  // image carried forward from the current file (sheet has no image column)
-  const image = existingById.get(id)?.image ?? "";
-
-  out.push({ id, sku, name, groupSlug, categorySlug, subcategorySlug, shortDescription, description, image, specs, featured });
+  // Accept the row.
+  seenId.set(id, row);
+  if (sku) seenSku.set(sku, row);
+  const image = existingById.get(id)?.image ?? ""; // sheet has no image column
+  out.push({
+    id, sku, name, groupSlug, categorySlug, subcategorySlug,
+    uom: get("UOM"), pack: get("Pack"),
+    shortDescription: get("Short Description"), description: get("Description"),
+    image, specs, featured,
+  });
 });
 
-if (errors.length) {
-  console.error(`\n✖ Import aborted — ${errors.length} problem(s) found. No file was written:\n`);
-  errors.forEach((e) => console.error(`  • ${e}`));
-  console.error("");
-  process.exit(1);
-}
-
+// Always publish the valid rows — a single bad row no longer blocks the catalogue.
 const newText = `${preamble}\n${serializeProductsArray(out)}${postamble}`;
 writeFileSync(PRODUCTS_FILE, newText);
-console.log(`[import] wrote ${out.length} products to src/data/products.ts`);
+
+console.log(`[import] wrote ${out.length} products to src/data/products.ts` +
+  (skippedOffSite ? ` (${skippedOffSite} hidden via "Add to site = N")` : ""));
+
+if (warnings.length) {
+  console.warn(`[import] ⚠ ${warnings.length} warning(s):`);
+  warnings.forEach((w) => console.warn(`  • ${w}`));
+}
+if (skipped.length) {
+  const lines = skipped.map((s) => `Row ${s.row} (SKU ${s.sku || "?"}): ${s.reasons.join("; ")}`);
+  console.warn(`[import] ⚠ SKIPPED ${skipped.length} invalid row(s) — fix in data/products.xlsx (the rest were published):`);
+  lines.forEach((l) => console.warn(`  • ${l}`));
+  // Machine-readable line so the dev watcher can surface this in the browser overlay.
+  console.log("__IMPORT_SKIPPED__" + JSON.stringify(lines));
+}

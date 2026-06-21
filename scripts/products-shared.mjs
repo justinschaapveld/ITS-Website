@@ -19,7 +19,7 @@ export const XLSX_FILE = join(root, "data/products.xlsx");
 // intentionally never emitted (galleries come from productImages.ts; tags unused).
 const FIELD_ORDER = [
   "id", "sku", "name", "groupSlug", "categorySlug", "subcategorySlug",
-  "shortDescription", "description", "image", "specs", "featured",
+  "uom", "pack", "shortDescription", "description", "image", "specs", "featured",
 ];
 
 // Split a TS file around a top-level array literal, returning the text before
@@ -116,6 +116,9 @@ export function serializeProduct(p) {
       lines.push("    ],");
     } else if (key === "featured") {
       if (p.featured === true) lines.push("    featured: true,");
+    } else if (key === "uom" || key === "pack") {
+      // Optional inventory fields — only emit when present, to keep the file tidy.
+      if (p[key]) lines.push(`    ${key}: ${JSON.stringify(p[key])},`);
     } else {
       lines.push(`    ${key}: ${JSON.stringify(p[key] ?? "")},`);
     }

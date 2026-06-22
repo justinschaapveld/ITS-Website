@@ -6,12 +6,13 @@ product range, company information, and quote-request paths. It is a static
 single-page application with no backend — all content lives in typed data modules.
 
 > This document is a snapshot of the project structure and conventions as a handoff
-> reference. Last updated after the **inventory-driven catalogue** landed: the real
-> ITS inventory export now drives ~1,100 products, with per-product category editing,
-> an "Image coming soon" placeholder, a scrolling featured carousel, a resilient
-> import, and an in-progress AI-draft pass for descriptions/specs (Valves, Balance
-> Weights, Tyre & Tube Repair, and Air Tools done — ~688 of ~1,097). See
-> [Product data — inventory workflow](#product-data--inventory-workflow).
+> reference. Last updated after the **catalogue was completed**: the real ITS inventory
+> export drives ~1,100 products, **every on-site product (1,096) now has an AI-drafted
+> Short Description + specs (0 blank)**, the slug columns in `products.xlsx` carry
+> **cascading category dropdowns** for safe re-categorising, and the header (logo
+> lockup) and homepage have had a design pass. Per-product category editing, an
+> "Image coming soon" placeholder, a featured carousel, and a resilient import round
+> it out. See [Product data — inventory workflow](#product-data--inventory-workflow).
 
 ---
 
@@ -230,15 +231,22 @@ Descriptions are filled, so any manual edit is kept.
 - Run: `/usr/local/bin/python3 scripts/draft-descriptions.py <group-slug>` (emits
   `data/_drafts.json`) → `node scripts/apply-drafts.mjs` → `npm run products:import`.
 - Each group has its own generator inside `draft-descriptions.py` (the naming differs
-  a lot between valves, weights, sockets, patches, airlines…). Note: in **Air Tools**
-  the inventory subcategory slugs are unreliable (gauges filed under `frl-units`,
-  impact wrenches under `hose-reels`), so `at_draft` classifies off the **product name**,
-  not the subcategory.
+  a lot between valves, weights, sockets, patches, airlines…). Note: in **Air Tools** and
+  **Tyre Fitting** the inventory subcategory slugs are unreliable (gauges filed under
+  `frl-units`, impact wrenches under `hose-reels`), so `at_draft`/`tf_draft` classify off
+  the **product name**, not the subcategory.
 
-**Done:** Valves & Accessories (271), Balance Weights (106), Tyre & Tube Repair (202),
-Air Tools & Airlines (109) — ~688 of ~1,097.
-**Remaining:** Tyre Fitting & Handling (385 — the last large group), Jacking/Lifting (22),
-Retreading (6), Cordless (1).
+**Status: COMPLETE — all 1,096 on-site products described, 0 blank.** Generators:
+`v_draft` (valves, 271), `b_draft` (balance weights, 106), `tr_draft` (tyre & tube repair,
+202), `at_draft` (air tools, 109), `tf_draft` (tyre fitting & handling, 379 — the largest,
+name-driven), `jrc_draft` (jacking-lifting / retreading / cordless, 27).
+
+> **Watch out — this pass was silently lost once.** Valves, balance weights, and tyre &
+> tube repair were drafted, "committed", then found blank ~600 short: the Excel/SheetJS
+> round-trip (see the ⚠️ note above) had dropped them before they were ever persisted,
+> and a live-preview check passed against the pre-clobber `products.ts`. They were
+> regenerated and locked in. **Lesson: after a draft batch, verify the committed
+> `products.xlsx` blob — not just the running site — before trusting a group is done.**
 
 > No-fabrication policy: the generator only restates what the product name/codes
 > encode. Hard-coded marketing filler (fake "Country of Manufacture", "12-month
@@ -388,16 +396,18 @@ or stats):
 
 ## Open / future items
 
-- **Finish the AI-draft pass** — only **Tyre Fitting & Handling (385)** remains as a
-  large group, plus the small tail (Jacking 22, Retreading 6, Cordless 1). Valves,
-  Balance Weights, Tyre & Tube Repair, and Air Tools are done (see above).
+- **AI-draft pass is complete** (all 1,096 on-site products described). The drafts are
+  honest restatements of the product name/codes — worth a human review for tone and
+  accuracy when time allows; edit in `products.xlsx` (manual edits are never overwritten).
+- **Re-categorising is now self-service** via the cascading dropdowns — but remember to
+  re-run `npm run products:dropdowns` after any `products:sync` (SheetJS strips them).
 - **Featured row:** a handful of products are flagged `Y` (incl. the 215N trolley jack,
   SKU 205336); pick the final set in col P (ideally real inventory SKUs with photos).
 - **10 hidden orphans** — old custom-SKU products that duplicate real inventory items
   are set `Add to site = N` (hidden but still in the sheet); delete the rows once their
   photos are re-pointed to the inventory SKU, or leave hidden.
-- **Catalogue is committed and deployed.** The product data, photos, and generators are
-  all in git and live on Netlify (`main` auto-deploys). One loose end: `public/products/205264.jpg`
+- **Catalogue is committed and deployed.** Product data, photos, and generators are all
+  in git and live on Netlify (`main` auto-deploys). One loose end: `public/products/205264.jpg`
   is still on disk but unused (205264 is now hidden) — optionally move it to
   `_offsite-product-images/` to match the off-site convention.
 - Add remaining product photos (drop into `public/products/`, naming = SKU).

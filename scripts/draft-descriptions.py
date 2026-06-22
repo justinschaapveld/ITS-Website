@@ -644,9 +644,72 @@ def tf_draft(name, sub):
         ('Application',cap(app) if app else None)])
     return short, specs
 
+# ─────────────── jacking-lifting · retreading · cordless-tools (small groups) ───────────────
+def jrc_draft(name, sub):
+    l=name.lower()
+    m=re.search(r'(\d+)\s*(?:t\b|ton|tonne)',l); ton=f"{m.group(1)} ton" if m else None
+    m=re.search(r'(\d+(?:\.\d+)?)\s*(?:ltr|litre|liter|lt|l)\b',l); vol=f"{m.group(1)} L" if m else None
+    op=('air/hydraulic' if ('air/hyd' in l or 'air/hydraulic' in l)
+        else 'air/manual' if ('air/man' in l or 'air/manual' in l)
+        else 'hydraulic' if 'hydraulic' in l else None)
+    prof=[]
+    for kw,val in [('tall','tall'),('short','low-profile'),('high','high-lift'),('low','low-profile')]:
+        if re.search(r'\b'+kw+r'\b',l) and val not in prof: prof.append(val)
+    dg=bool(re.search(r'\bdg\b|-\s*dg',l)); alum='alum' in l
+    colour=next((c for c in ['yellow','red','blue','black','green'] if re.search(r'\b'+c+r'\b',l)),None)
+    brand=None
+    for kw,b in [('liftech','Liftech'),('liftec','Liftech'),('masada','Masada'),('winntec','Winntec'),
+                 ('moore','Moore-Safe'),('pincott','Pincott'),('ame','AME'),('tqb','TQB')]:
+        if kw in l: brand=b; break
+    if not brand and re.search(r'\bir\b',l): brand='Ingersoll Rand'
+    m=re.search(r'\b(LT\d+\w*|YAJ-?\w+|W\d{3,}-?\w*|IIE|\d{5})\b',name); ref=m.group(1) if m else None
+
+    if 'chock' in l: base,app,typ='wheel chock','chocking wheels to stop a vehicle rolling','Wheel chock'
+    elif 'jack' in l and 'plate' in l: base,app,typ='jack base plate','spreading jack load on soft ground','Jack plate'
+    elif 'jack' in l and ('handle' in l or 'extn' in l):
+        base,app,typ=('jack handle extension' if 'extn' in l else 'spare jack handle'),'operating a bottle or trolley jack','Jack handle'
+    elif 'jack' in l and 'hose' in l: base,app,typ='replacement jack hose','servicing an air/hydraulic jack','Spare part'
+    elif 'trolley' in l: base,app,typ='trolley jack','rolling under and lifting vehicles in the workshop','Trolley jack'
+    elif 'bottle' in l: base,app,typ='bottle jack','lifting trucks and heavy vehicles','Bottle jack'
+    elif 'jack' in l: base,app,typ='bottle jack','lifting trucks and heavy vehicles','Bottle jack'
+    elif 'blade' in l: base,app,typ='retread buffing blade','buffing tyres before retreading','Buffing blade'
+    elif 'gloss' in l: base,app,typ='tyre gloss dressing','finishing tyre sidewalls with a high-gloss shine','Tyre dressing'
+    elif 'paint' in l: base,app,typ='tyre sidewall paint','restoring a black finish to tyre sidewalls','Tyre dressing'
+    elif 'silicone' in l and 'spray' in l: base,app,typ='silicone tyre dressing spray','dressing and shining tyres','Tyre dressing'
+    elif 'shine' in l: base,app,typ='tyre shine dressing','dressing and shining tyre sidewalls','Tyre dressing'
+    elif 'impact' in l: base,app,typ='cordless impact wrench kit','wheel-nut removal and refitting on the move','Cordless impact wrench'
+    else: base,app,typ='workshop product','workshop use','Tool'
+
+    lead=[]
+    if typ=='Bottle jack' and alum: lead.append('aluminium')
+    if op and typ in ('Bottle jack','Trolley jack'): lead.append(op)
+    if ton and typ in ('Bottle jack','Trolley jack','Jack plate'): lead.append(ton)
+    if typ=='Tyre dressing' and 'non silicone' in l: lead.append('non-silicone')
+    phrase=cap(' '.join(lead+[base]).strip())
+
+    idbits=[x for x in [brand,ref] if x]; idtxt=f" ({' '.join(idbits)})" if idbits else ""
+
+    detail=[]
+    if prof and typ in ('Bottle jack','Trolley jack'): detail.append('/'.join(prof))
+    if ton and typ in ('Jack handle','Spare part'): detail.append(f"to suit {ton} jack")
+    if vol: detail.append(vol)
+    if colour and typ=='Bottle jack': detail.append(colour)
+    apptxt=f" for {app}" if app else ''
+    tail=(', '+', '.join(detail)) if detail else ''
+    short=re.sub(r'\s+',' ',f"{phrase}{idtxt}{apptxt}{tail}.").strip()
+
+    specs=clean([('Type',typ),('Brand',brand),
+        ('Capacity',ton if typ in ('Bottle jack','Trolley jack','Jack plate') else None),
+        ('Operation',cap(op) if (op and typ in ('Bottle jack','Trolley jack')) else None),
+        ('Volume',vol),('Ref',ref),
+        ('Handling','Dangerous goods — flammable' if dg else None),
+        ('Application',cap(app) if app else None)])
+    return short, specs
+
 GENERATORS = {'valves-accessories': v_draft, 'balance-weights': b_draft,
               'tyre-tube-repair': tr_draft, 'air-tools-airlines': at_draft,
-              'tyre-fitting-handling': tf_draft}
+              'tyre-fitting-handling': tf_draft,
+              'jacking-lifting': jrc_draft, 'retreading': jrc_draft, 'cordless-tools': jrc_draft}
 gen = GENERATORS.get(GROUP)
 if not gen:
     sys.exit(f"No generator for group '{GROUP}'. Available: {', '.join(GENERATORS)}")

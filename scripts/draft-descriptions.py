@@ -423,8 +423,230 @@ def at_draft(name, sub):
         ('Application',cap(app) if app else None)])
     return short, specs
 
+# ───────────────────────── tyre-fitting-handling ─────────────────────────
+# Largest, most varied group; subcategory slugs mix product types, so this is
+# name-driven with a per-subcategory fallback for the long tail.
+TF_BRANDS=[('powermount','Powermount'),('gaither','Gaither'),('melco','Melco'),('mumme','Mumme'),
+ ('haltec','Haltec'),('nortorq','Nortorq'),('winntec','Winntec'),('titan','Titan'),('markall','Markall'),
+ ('josco','Josco'),('treadtech','Treadtech'),('rubbercut','Rubbercut'),('nuovacme','Nuovacme'),
+ ('hatco','Hatco'),('big ben','Big Ben'),('wd-40','WD-40'),('uni paint','Uni Paint'),('eagle','Eagle'),
+ ('wonder','Wonder'),('ame','AME')]
+TF_SOCK={'Impact socket','Square impact socket','Flip socket','Hex bit socket','Lug-nut socket',
+ 'Impact socket set','Extension bar','Breaker bar','Sliding T-bar','Impact socket reducer'}
+TF_SUB_DEFAULT={
+ 'mounting-paste':('tyre mounting lubricant','easing the tyre onto the rim during fitting','Mounting lube'),
+ 'bead-seating-fluid':('spray applicator bottle','applying bead lube or cleaner','Spray bottle'),
+ 'gloves-eyewear':('work gloves','hand protection in the workshop','Work gloves'),
+ 'tyre-markers':('tyre marker','marking tyres for identification','Tyre marker'),
+ 'hand-cleaners':('workshop cleaner','workshop cleaning','Cleaner'),
+ 'oring-kits':('tubeless rim O-ring','sealing tubeless rim assemblies','Rim O-ring'),
+ 'pressure-gauges':('tyre pressure gauge','checking and setting tyre pressure','Pressure gauge'),
+ 'depth-gauges':('tyre tread-depth gauge','measuring remaining tread','Depth gauge'),
+ 'inflation-chucks':('tyre inflation chuck','connecting an airline to the valve','Inflation chuck'),
+ 'steel-levers':('tyre lever','mounting and demounting tyres by hand','Tyre lever'),
+ 'hammers-mallets':('sledge / club hammer','heavy striking work at the tyre bay','Hammer'),
+ 'bead-breakers':('bead breaker','breaking the tyre bead off the rim','Bead breaker'),
+}
+
+def tf_parse(name):
+    n=' '+name+' '; low=n.lower(); a={}
+    m=re.search(r'(\d+/\d+|\d)\s*"?\s*dr?\b',low)
+    if m: a['drive']=m.group(1)
+    else:
+        m=re.search(r'(\d+/\d+|\d)\s*"',name); a['drive']=m.group(1) if m else None
+    m=re.search(r'(\d+)\s*x\s*(\d+)\s*mm',low); a['sqsize']=f"{m.group(1)} × {m.group(2)} mm" if m else None
+    m=re.search(r'(\d{2}(?:\s*x\s*\d+){1,3})',name); a['braces']=re.sub(r'\s*x\s*',' × ',m.group(1)) if m else None
+    m=re.search(r'(\d+)\s*-\s*(\d+)\s*mm',low); a['mmrange']=f"{m.group(1)}–{m.group(2)} mm" if m else None
+    m=re.search(r'(?:x\s*)?(\d+)\s*mm\b',low); a['mm']=f"{m.group(1)} mm" if m else None
+    m=re.search(r'(\d+)[ -](\d+/\d+)\s*(?:af|"|\')',name,re.I)
+    if m: a['inch']=f'{m.group(1)} {m.group(2)}"'
+    else:
+        m=re.search(r'\b(\d+/\d+)\s*(?:af|"|\')',name,re.I)
+        if m: a['inch']=f'{m.group(1)}"'
+        else:
+            m=re.search(r'(\d+(?:\.\d+)?)\s*"',name); a['inch']=f'{m.group(1)}"' if m else None
+    m=re.search(r'(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*"',name); a['inchrange']=f'{m.group(1)}–{m.group(2)}"' if m else None
+    m=re.search(r'(\d+)\s*(?:pce?s?|pcs|piece)\b',low); a['pieces']=m.group(1) if m else None
+    m=re.search(r'(\d+)\s*-\s*(\d+)\s*nm',low)
+    if m: a['nm']=f"{m.group(1)}–{m.group(2)} Nm"
+    else:
+        m=re.search(r'(\d+)\s*nm',low); a['nm']=f"{m.group(1)} Nm" if m else None
+    m=re.search(r'(\d+(?:\.\d+)?)\s*lb',low); a['lb']=f"{m.group(1)} lb" if m else None
+    m=re.search(r'(\d+(?:\.\d+)?)\s*kg',low); a['kg']=f"{m.group(1)} kg" if m else None
+    m=re.search(r'(\d+(?:\.\d+)?)\s*ml\b',low); a['vol']=f"{m.group(1)} mL" if m else None
+    if not a['vol']:
+        m=re.search(r'(\d+(?:\.\d+)?)\s*(?:ltr?|litre|liter|lt|l)\b',low); a['vol']=f"{m.group(1)} L" if m else None
+    if not a['vol']:
+        m=re.search(r'(\d+(?:\.\d+)?)\s*(?:gallon|gal)',low); a['vol']=f"{m.group(1)} gal" if m else None
+    if not a['vol']:
+        m=re.search(r'(\d+(?:\.\d+)?)\s*qt',low); a['vol']=f"{m.group(1)} qt" if m else None
+    m=re.search(r'(\d+)\s*ton',low); a['ton']=f"{m.group(1)} ton" if m else None
+    m=re.search(r'\((\d{2,4})\)',name)
+    if not m: m=re.search(r'\bpk?(\d{2,4})\b',low)
+    a['pack']=f"pack of {m.group(1)}" if m else None
+    a['deep']=bool('deep' in low or re.search(r'\bdp\b',low))
+    a['square']=bool('square' in low or re.search(r'\bsq\b',low))
+    a['digital']=bool('digi' in low or 'digital' in low)
+    a['demount']='demount' in low
+    a['thin']='thin' in low; a['thick']='thick' in low
+    for pat,val in [(r'2xl|2x\b','2XL'),(r'xlge?|xlg|x-?large','XL'),(r'\blge?\b|large|\blg\b','large'),
+                    (r'med(ium)?','medium'),(r'\bsml?\b|small','small')]:
+        if re.search(pat,low): a['glove']=val; break
+    for c in ['yellow','red','green','blue','white','black','orange']:
+        if re.search(r'\b'+c+r'\b',low): a['colour']=c; break
+    for kw,b in TF_BRANDS:
+        if kw in low: a['brand']=b; break
+    for kw,mat in [('nitrile','Nitrile'),('neoflex','Neoflex'),('riggers','Riggers'),('leather','Leather'),('latex','Latex')]:
+        if kw in low: a['material']=mat; break
+    return a
+
+def tf_kind(name, sub):
+    l=name.lower()
+    if any(k in l for k in ['lock key','lock keys','lock nut','lock buster']):
+        return ('wheel-lock removal key','removing anti-theft locking wheel nuts','Wheel-lock key')
+    if 'torque wrench' in l or 'torque micrometer' in l or 'tension wrench' in l:
+        return ('click-type torque wrench','torquing wheel nuts to specification','Torque wrench')
+    if 'torque multiplier' in l: return ('torque multiplier','breaking and torquing high-torque wheel nuts','Torque multiplier')
+    if 'torque ext' in l: return ('torque-limiting extension bar','torquing wheel nuts to a preset limit','Torque extension bar')
+    if 'breaker bar' in l: return ('breaker bar','loosening tight wheel nuts','Breaker bar')
+    if 'reducer' in l: return ('impact socket reducer','adapting between impact drive sizes','Impact socket reducer')
+    if 't-bar' in l or 'sliding t' in l: return ('sliding T-bar','turning sockets by hand','Sliding T-bar')
+    if (' ext' in l or 'extn' in l or 'extension' in l) and ('socket' in l or 'drive' in l or re.search(r'\d\s*d\b',l)):
+        return ('impact extension bar','reaching recessed wheel nuts','Extension bar')
+    if 'socket' in l:
+        if 'bit' in l and 'hex' in l: return ('hex bit socket','driving hex fasteners','Hex bit socket')
+        if 'lug nut' in l or 'lug-nut' in l: return ('lug-nut socket','removing wheel lug nuts','Lug-nut socket')
+        if 'set' in l: return ('impact socket set','a range of wheel-nut sizes','Impact socket set')
+        if 'flip' in l: return ('flip impact socket','two wheel-nut sizes in one socket','Flip socket')
+        if 'cover' in l: return ('protective-cover wheel-nut socket','fitting alloy wheel nuts without marking them','Impact socket')
+        if 'square' in l or re.search(r'\bsq\b',l): return ('square (4-point) impact socket','square-drive truck wheel nuts','Square impact socket')
+        return (('deep impact socket' if ('deep' in l or re.search(r'\bdp\b',l)) else 'impact socket'),'removing and refitting wheel nuts','Impact socket')
+    if 'brace' in l:
+        if '4 way' in l or '4-way' in l or '4way' in l: b='4-way wheel brace'
+        elif 'd/e' in l: b='truck wheel brace'
+        else: b='wheel brace'
+        return (b,'removing and refitting wheel nuts by hand','Wheel brace')
+    if re.search(r'\btyre l\b',l) or 'tyre lever' in l:
+        if 'protector' in l: return ('tyre-lever rim protector','protecting the rim while levering','Rim protector')
+        if 'keeper' in l: return ('tyre-lever bead keeper','holding the bead while levering','Bead keeper')
+        return ('tyre lever','mounting and demounting tyres by hand','Tyre lever')
+    if 'porta power' in l or 'b/b' in l: return ('porta-power bead-breaker component','hydraulic bead breaking','Bead breaker')
+    if 'bazooka' in l or 'bead boost' in l or 'bead booster' in l or 'bead blaster' in l:
+        if any(k in l for k in ['valve','trigger','barrel','gauge','intake','safety','inlet','nozzle','hose']):
+            return ('bead-seater spare part','servicing a bead-seating air tank','Bead-seater part')
+        return ('bead-seating air tank','seating stubborn tyre beads with a blast of air','Bead seater')
+    if 'bead break' in l or 'bead push' in l or 'bead chisel' in l:
+        return ('bead breaker','breaking the tyre bead off the rim','Bead breaker')
+    if 'mag boot' in l: return ('mag-wheel mounting boot','protecting alloy rims during mounting','Rim protector')
+    if 'bead seat ring' in l: return ('bead-seat ring','seating tubeless beads','Bead-seat ring')
+    if 'bead keeper' in l: return ('bead keeper','holding the bead during fitting','Bead keeper')
+    if 'bead mount clamp' in l or 'bead clamp' in l: return ('bead mount clamp','clamping the bead during fitting','Bead clamp')
+    if 'bead expander' in l: return ('bead expander','holding tube-type beads open during fitting','Bead expander')
+    if 'chuck' in l and ('hose' in l or 'pipe' in l) and 'suit' in l: return ('replacement chuck and hose','servicing an inflation gauge','Spare part')
+    if 'chuck' in l: return ('tyre inflation chuck','connecting an airline to the valve','Inflation chuck')
+    if 'tread depth' in l: return ('tyre tread-depth gauge','measuring remaining tread','Depth gauge')
+    if 'rim gauge' in l: return ('wheel measuring tool','measuring rim and PCD dimensions','Measuring tool')
+    if 'gauge' in l: return ('tyre pressure gauge','checking and setting tyre pressure','Pressure gauge')
+    if 'air gun' in l or 'blow gun' in l or 'air blow' in l: return ('air blow gun','blowing down and cleaning with compressed air','Blow gun')
+    if sub=='mounting-paste' or any(k in l for k in ['mount wax','tyre mnt','mnt paste','mount lube','tyre lube','slip tac','bead wax','mount paste','tyre mount','skid']):
+        return ('tyre mounting lubricant','easing the tyre onto the rim during fitting','Mounting lube')
+    if 'spray' in l or 'bottle' in l: return ('spray applicator bottle','applying bead lube or cleaner','Spray bottle')
+    if 'marker' in l or 'crayon' in l: return ('tyre marker','marking tyres for identification','Tyre marker')
+    if 'glove' in l: return ('work gloves','hand protection in the workshop','Work gloves')
+    if 'glasses' in l or 'eyewear' in l or 'goggle' in l: return ('safety eyewear','eye protection in the workshop','Eyewear')
+    if 'handcleaner' in l or 'hand cleaner' in l: return ('hand cleaner','cleaning hands after workshop work','Hand cleaner')
+    if 'degreaser' in l: return ('heavy-duty degreaser','degreasing parts and surfaces','Degreaser')
+    if 'wheel cleaner' in l or 'pre-prep' in l or 'pro-clean' in l: return ('wheel cleaner','cleaning wheels before service','Wheel cleaner')
+    if 'rags' in l: return ('workshop rags','general workshop wipe-down','Rags')
+    if 'hammer' in l or 'mallet' in l:
+        if 'handle' in l: return ('replacement hammer handle','re-handling a sledge or club hammer','Spare part')
+        return ('sledge / club hammer','heavy striking work at the tyre bay','Hammer')
+    if 'o ring' in l or 'o-ring' in l: return ('tubeless rim O-ring','sealing split-rim and tubeless assemblies','Rim O-ring')
+    if 'regroov' in l:
+        if 'blade' in l: return ('tyre regrooving blade','recutting tread grooves on regroovable tyres','Regrooving blade')
+        return ('tyre regrooving tool','recutting tread grooves on regroovable tyres','Regrooving tool')
+    if 'brander' in l: return ('tyre branding stamp','branding identification marks into tyres','Branding stamp')
+    if 'protector' in l or 'rim edge' in l: return ('rim / lever protector','protecting the rim during fitting','Rim protector')
+    if 'checkpoint' in l or 'hexchex' in l or 'dustite' in l:
+        return ('loose-wheel-nut indicator','spotting a loosening wheel nut at a glance','Wheel-nut indicator')
+    if 'axle stand' in l: return ('axle stand','supporting a raised vehicle','Axle stand')
+    if 'cage' in l: return ('tyre inflation safety cage','containing a tyre during inflation','Safety cage')
+    if 'dolly' in l or 'trolley' in l or 'smartcart' in l or 'lifter' in l: return ('wheel dolly / trolley','moving heavy wheels around the workshop','Wheel dolly')
+    if 'jacking pad' in l or 'rubber block' in l: return ('jack rubber pad','protecting the jacking point when lifting','Jacking pad')
+    if 'caliper' in l or 'rim gauge' in l or 'pcd' in l or 'stud aligner' in l: return ('wheel measuring tool','measuring rim and PCD dimensions','Measuring tool')
+    if 'plier' in l or 'pincer' in l:
+        for kw,nm in [('long nose','long-nose pliers'),('combination','combination pliers'),
+                      ('diagonal','diagonal side-cutting pliers'),('multigrip','multigrip pliers'),
+                      ('multi grip','multigrip pliers'),('side cutter','side-cutting pliers'),
+                      ('pincer','pincer pliers')]:
+            if kw in l: return (nm,'general gripping and cutting','Pliers')
+        return ('workshop pliers','general gripping and cutting','Pliers')
+    if 'cover remover' in l: return ('wheel-nut cover remover','removing decorative wheel-nut covers','Hand tool')
+    if 'stud liner' in l: return ('stud liner kit','protecting wheel studs during fitting','Stud liner kit')
+    if 'spare tyre tool' in l or 'spare wheel' in l: return ('spare-wheel removal tool','lowering an underslung spare wheel','Hand tool')
+    if 'chock' in l: return ('wheel chock','chocking wheels to stop a vehicle rolling','Wheel chock')
+    if 'light' in l and any(k in l for k in ['rechargeable','flex','led','work','head']): return ('rechargeable work light','workshop and under-vehicle lighting','Work light')
+    return TF_SUB_DEFAULT.get(sub, ('tyre-fitting tool','tyre fitting and handling at the workshop','Tool'))
+
+def tf_draft(name, sub):
+    a=tf_parse(name); low=name.lower()
+    base,app,typ=tf_kind(name, sub)
+    lead=[]
+    if typ in ('Impact socket','Square impact socket','Flip socket') and not a.get('pieces'):
+        sz=a.get('sqsize') or a.get('mm') or a.get('inch')
+        if sz: lead.append(sz)
+    if a.get('pieces') and 'set' in typ.lower(): lead.append(f"{a['pieces']}-piece")
+    if a.get('material') and typ=='Work gloves': lead.append(a['material'])
+    if a.get('digital') and typ in ('Depth gauge','Pressure gauge'): lead.append('digital')
+    phrase=cap(' '.join(lead+[base]).strip())
+
+    make=next((m for m in ['BMW','VW','Audi','Mercedes','Tesla','Mustang'] if re.search(r'\b'+m+r'\b',name,re.I)),None)
+    mref=re.search(r'\b(ET\d[\w\-]*|LVS\w+|TL\d+\w*|RC\d+|PX-?\w+|\d{5,6})\b',name)
+    ref=mref.group(1) if mref else None
+    if typ=='Wheel-lock key' or (typ=='Jacking pad' and make):
+        idtxt=f" to suit {make}" if make else ""
+    else:
+        bits=[x for x in [a.get('brand'),ref] if x]; idtxt=f" ({' '.join(bits)})" if bits else ""
+
+    detail=[]
+    if typ=='Wheel-lock key' and a.get('pieces'): detail.append(f"{a['pieces']}-piece set")
+    if a.get('drive') and typ in TF_SOCK:
+        dl='square drive' if (a.get('square') and 'square' not in base and 'square' not in phrase.lower()) else 'drive'
+        detail.append(f"{a['drive']}\" {dl}")
+    if typ in ('Extension bar','Breaker bar') and a.get('mm'): detail.append(a['mm'])
+    if typ=='Wheel brace' and a.get('braces'): detail.append(a['braces']+' mm')
+    if typ=='Pliers' and (a.get('mm') or a.get('inch')): detail.append(a.get('mm') or a.get('inch'))
+    if typ in ('Extension bar',) and a.get('inch'): detail.append(a['inch'])
+    if typ in ('Rim O-ring','Bead-seat ring','Bead expander') and (a.get('inch') or a.get('inchrange')): detail.append(a.get('inchrange') or a.get('inch'))
+    if typ in ('Wheel-nut indicator','Regrooving blade') and (a.get('mmrange') or a.get('mm')): detail.append(a.get('mmrange') or a.get('mm'))
+    if a.get('nm'): detail.append(a['nm'])
+    if a.get('lb'): detail.append(a['lb'])
+    if a.get('ton'): detail.append(a['ton'])
+    if a.get('vol') and typ in ('Mounting lube','Spray bottle','Tyre marker','Hand cleaner','Degreaser','Wheel cleaner','Cleaner','Bead seater'): detail.append(a['vol'])
+    if a.get('kg') and typ=='Mounting lube': detail.append(a['kg'])
+    if a.get('glove'): detail.append(a['glove'])
+    if a.get('thin'): detail.append('thin section')
+    if a.get('thick'): detail.append('thick section')
+    if a.get('demount'): detail.append('demount only')
+    if a.get('colour') and typ in ('Tyre marker','Work gloves','Impact socket','Wheel-nut indicator'): detail.append(a['colour'])
+    if a.get('pack'): detail.append(a['pack'])
+
+    apptxt=f" for {app}" if app else ''
+    tail=(', '+', '.join(detail)) if detail else ''
+    short=re.sub(r'\s+',' ',f"{phrase}{idtxt}{apptxt}{tail}.").strip()
+
+    specs=clean([('Type',typ),('Brand',a.get('brand')),('Make',make if typ in ('Wheel-lock key','Jacking pad') else None),
+        ('Drive',(a['drive']+'"') if (a.get('drive') and typ in TF_SOCK) else None),
+        ('Size',a.get('sqsize') or a.get('mm') or a.get('inch') or a.get('mmrange') or a.get('inchrange')),
+        ('Torque',a.get('nm')),('Weight',a.get('lb') or a.get('kg')),('Capacity',a.get('ton')),
+        ('Volume',a.get('vol')),('Pieces',a.get('pieces')),('Glove size',a.get('glove')),
+        ('Colour',cap(a['colour']) if a.get('colour') else None),('Ref',ref),('Pack',a.get('pack')),
+        ('Application',cap(app) if app else None)])
+    return short, specs
+
 GENERATORS = {'valves-accessories': v_draft, 'balance-weights': b_draft,
-              'tyre-tube-repair': tr_draft, 'air-tools-airlines': at_draft}
+              'tyre-tube-repair': tr_draft, 'air-tools-airlines': at_draft,
+              'tyre-fitting-handling': tf_draft}
 gen = GENERATORS.get(GROUP)
 if not gen:
     sys.exit(f"No generator for group '{GROUP}'. Available: {', '.join(GENERATORS)}")

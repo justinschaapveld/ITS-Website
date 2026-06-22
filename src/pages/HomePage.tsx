@@ -23,11 +23,6 @@ const TILE_ICONS: Record<string, ((props: SVGProps<SVGSVGElement>) => JSX.Elemen
   'other-workshop':        ToolChestIcon,
 };
 
-const specials: { label: string; text: string; to?: string }[] = [
-  { label: "TRADE PRICING", text: "Volume orders — ask about trade pricing", to: "/contact" },
-  { label: "CATALOGUE", text: "Browse the full product catalogue", to: "/products" },
-];
-
 // Editorial order for the category-tiles section below the hero banner.
 // Slug references productGroups in src/data/categories.ts. Label is the
 // display string for the tile heading (allows a small re-spelling for tile 7).
@@ -47,33 +42,31 @@ export default function HomePage() {
 
   return (
     <div>
-      {/* Specials marquee — site-wide announcement strip, directly under the header.
-          Border on the bottom only; the header already supplies a 7px teal divider above. */}
-      <section className="border-b border-zinc-700 overflow-hidden" style={{ background: '#222' }}>
-        <div className="flex animate-scroll whitespace-nowrap" aria-label="Trade information">
-          {[...specials, ...specials, ...specials].map((s, i) => {
-            const inner = (
-              <>
-                <span
-                  className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded"
-                  style={{ background: 'var(--color-yellow)', color: 'var(--color-charcoal)' }}
-                >
-                  {s.label}
-                </span>
-                <span className="text-zinc-300 text-sm font-medium">{s.text}</span>
-                <span className="text-zinc-600 mx-4 text-xl" aria-hidden="true">|</span>
-              </>
-            );
-            return s.to ? (
-              <Link key={i} to={s.to} className="inline-flex items-center gap-3 px-8 py-3.5 flex-shrink-0 hover:opacity-80 transition-opacity">
-                {inner}
-              </Link>
-            ) : (
-              <div key={i} className="inline-flex items-center gap-3 px-8 py-3.5 flex-shrink-0">
-                {inner}
-              </div>
-            );
-          })}
+      {/* Trade strip — static "counter" band under the header (no motion, respects
+          reduced-motion). Carries the trade-pricing signal and a catalogue link. */}
+      <section style={{ background: 'var(--color-ink)', borderBottom: '1px solid #2c2c2c' }}>
+        <div className="max-w-7xl mx-auto px-4 h-11 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <span
+              className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] leading-none px-2 py-1 flex-shrink-0"
+              style={{ background: 'var(--color-signal)', color: 'var(--color-ink)' }}
+            >
+              Trade
+            </span>
+            <span className="hidden sm:inline font-mono text-[11px] uppercase tracking-[0.1em] truncate" style={{ color: 'var(--color-steel)' }}>
+              Volume pricing on request
+              <span style={{ color: '#3a3a3a' }}> · </span>
+              Australia-wide dispatch
+            </span>
+          </div>
+          <Link
+            to="/products"
+            className="group font-mono text-[11px] uppercase tracking-[0.1em] whitespace-nowrap flex items-center gap-1.5 hover:opacity-80 transition-opacity flex-shrink-0"
+            style={{ color: 'var(--color-signal)' }}
+          >
+            Browse the catalogue
+            <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+          </Link>
         </div>
       </section>
 
@@ -99,6 +92,12 @@ export default function HomePage() {
         {/* Overlay content — no card chrome, sits directly on the image */}
         <div className="relative w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-16 py-12 md:py-16">
           <div className="max-w-3xl">
+            <div
+              className="font-mono text-[11px] sm:text-[12px] uppercase tracking-[0.18em] mb-4 md:mb-5"
+              style={{ color: 'var(--color-signal)' }}
+            >
+              Trade tools · Repair materials · Workshop equipment
+            </div>
             <h1
               className="font-display uppercase leading-[1.02] text-[32px] sm:text-[40px] md:text-[48px] lg:text-[58px] mb-5 md:mb-6"
               style={{
@@ -154,6 +153,17 @@ export default function HomePage() {
       {/* Category tiles — 4×2 editorial grid */}
       <section className="bg-field py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4">
+          <div className="mb-8 md:mb-10">
+            <div className="font-mono text-[11px] uppercase mb-2" style={{ color: 'var(--color-teal)', letterSpacing: '0.12em' }}>
+              Catalogue
+            </div>
+            <h2
+              className="font-display uppercase text-ink text-[32px] md:text-[40px] leading-[1.04]"
+              style={{ letterSpacing: '0.04em', fontWeight: 800 }}
+            >
+              Browse by Product Group
+            </h2>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
             {HERO_TILE_ORDER.map((tile) => {
               const group = productGroups.find((g) => g.slug === tile.slug);
@@ -164,7 +174,7 @@ export default function HomePage() {
                 <Link
                   key={tile.slug}
                   to={`/products/${tile.slug}`}
-                  className={`${Icon ? 'group ' : ''}block bg-white border border-rule p-5 md:p-6 transition-colors hover:border-[var(--color-teal)]`}
+                  className={`${Icon ? 'group ' : ''}block bg-white border border-rule p-5 md:p-6 transition-all duration-200 hover:border-[var(--color-teal)] hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-12px_rgba(31,61,71,0.45)]`}
                 >
                   {Icon && (
                     <Icon className="w-10 h-10 md:w-12 md:h-12 mb-3 text-steel group-hover:text-[var(--color-teal)] transition-colors" />
@@ -182,21 +192,27 @@ export default function HomePage() {
                 </Link>
               );
             })}
-            {/* Tile 8 — All Categories wayfinding tile */}
+            {/* Tile 8 — All Categories CTA tile (filled, closes the grid) */}
             <Link
               to="/products"
-              className="block bg-white border border-rule p-5 md:p-6 transition-colors hover:border-[var(--color-teal)]"
+              className="group flex flex-col justify-between p-5 md:p-6 transition-colors"
+              style={{ background: 'var(--color-teal)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-teal-dark)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-teal)')}
             >
               <h3
-                className="font-display uppercase text-[18px] md:text-[20px] leading-[1.1]"
-                style={{
-                  color: 'var(--color-teal)',
-                  letterSpacing: '0.04em',
-                  fontWeight: 800,
-                }}
+                className="font-display uppercase text-white text-[18px] md:text-[20px] leading-[1.1]"
+                style={{ letterSpacing: '0.04em', fontWeight: 800 }}
               >
-                All Categories →
+                All Categories
               </h3>
+              <div
+                className="font-mono text-[11px] tracking-[0.08em] uppercase mt-3 flex items-center gap-1.5"
+                style={{ color: 'rgba(255,255,255,0.85)' }}
+              >
+                View everything
+                <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+              </div>
             </Link>
           </div>
         </div>

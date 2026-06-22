@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Search, ChevronDown, ChevronRight, Phone, MapPin } from "lucide-react";
+import { Menu, X, Search, ChevronDown, ChevronRight, Phone, MapPin, ArrowRight } from "lucide-react";
 import { productGroups } from "../data/categories";
 import { searchProducts } from "../data/products";
 
@@ -79,20 +79,29 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 shadow-xl" style={{ background: '#000', borderBottom: '7px solid var(--color-teal)' }}>
-      {/* Top bar */}
-      <div className="border-b border-white/[0.08]" style={{ background: '#000' }}>
-        <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between text-xs text-zinc-400">
-          <div className="flex items-center gap-2">
-            <MapPin size={12} className="flex-shrink-0" style={{ color: 'var(--color-yellow)' }} />
-            <span>Dandenong South, Victoria — Melbourne's Tyre Industry Specialists</span>
+    <header
+      className="sticky top-0 z-50"
+      style={{
+        background: '#000',
+        boxShadow: '0 3px 0 0 var(--color-teal), 0 4px 0 0 var(--color-signal), 0 10px 26px -8px rgba(0,0,0,0.55)',
+      }}
+    >
+      {/* Top utility bar */}
+      <div style={{ background: '#000', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div
+          className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-between font-mono text-[0.66rem] uppercase tracking-[0.14em]"
+          style={{ color: 'var(--color-steel)' }}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <MapPin size={11} className="flex-shrink-0" style={{ color: 'var(--color-signal)' }} />
+            <span className="truncate">Dandenong South, VIC · Australia-wide dispatch</span>
           </div>
-          <div className="flex items-center gap-4">
-            <a href="tel:0387810600" className="flex items-center gap-1 hover:text-white transition-colors">
-              <Phone size={12} />
+          <div className="flex items-center gap-5 flex-shrink-0">
+            <a href="tel:0387810600" className="flex items-center gap-1.5 text-white hover:opacity-80 transition-opacity">
+              <Phone size={11} style={{ color: 'var(--color-signal)' }} />
               <span>03 8781 0600</span>
             </a>
-            <a href="mailto:its-office@itsindustrial.com.au" className="hidden sm:block hover:text-white transition-colors">
+            <a href="mailto:its-office@itsindustrial.com.au" className="hidden md:block hover:text-white transition-colors">
               its-office@itsindustrial.com.au
             </a>
           </div>
@@ -100,56 +109,85 @@ export default function Header() {
       </div>
 
       {/* Main header */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex items-center gap-6">
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0" onClick={() => setMobileOpen(false)}>
+      <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="flex items-center gap-4 lg:gap-7">
+          {/* Logo lockup: seal + typeset wordmark */}
+          <Link
+            to="/"
+            className="group flex items-center gap-3 sm:gap-4 flex-shrink-0"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Industrial Tyre Supplies — Home"
+          >
             <img
               src="/ITS_Logo.png"
-              alt="Industrial Tyre Supplies"
-              className="h-12 sm:h-16 md:h-[4.75rem] w-auto object-contain bg-transparent"
+              alt=""
+              aria-hidden="true"
+              className="h-14 sm:h-[4.25rem] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.04]"
             />
+            <span className="hidden sm:flex items-stretch gap-3.5" aria-hidden="true">
+              <span
+                className="w-px self-stretch"
+                style={{ background: 'linear-gradient(to bottom, transparent, var(--color-teal) 18%, var(--color-teal) 82%, transparent)' }}
+              />
+              <span className="flex flex-col justify-center">
+                <span className="font-display uppercase text-white leading-[0.82] text-[1.5rem] tracking-[0.005em]">
+                  Industrial Tyre
+                </span>
+                <span className="font-display uppercase text-white leading-[0.82] text-[1.5rem] tracking-[0.005em]">
+                  Supplies
+                </span>
+                <span
+                  className="font-mono text-[0.6rem] uppercase tracking-[0.2em] mt-[0.45rem]"
+                  style={{ color: 'var(--color-steel)' }}
+                >
+                  Melbourne <span style={{ color: 'var(--color-teal)' }}>·</span> Tyre trade <span style={{ color: 'var(--color-teal)' }}>·</span> Est. 1978
+                </span>
+              </span>
+            </span>
           </Link>
 
           {/* Search */}
           <div className="flex-1 max-w-xl relative" ref={searchRef}>
             <form onSubmit={handleSearchSubmit}>
               <div className="relative">
-                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-steel)' }} />
                 <input
                   type="text"
-                  placeholder="Search products, SKU or category..."
+                  placeholder="Search products, SKU or category…"
                   value={searchQuery}
                   onChange={handleSearch}
                   onFocus={e => {
                     setSearchFocused(true);
                     e.currentTarget.style.borderColor = 'var(--color-teal)';
-                    e.currentTarget.style.background = '#333';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(45,82,96,0.35)';
+                    e.currentTarget.style.background = '#181818';
                   }}
                   onBlur={e => {
-                    e.currentTarget.style.borderColor = '#3a3a3a';
-                    e.currentTarget.style.background = '#2a2a2a';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.background = '#161616';
                   }}
-                  className="w-full border text-white placeholder-zinc-500 pl-9 pr-4 py-2 text-sm rounded focus:outline-none transition-all"
-                  style={{ background: '#2a2a2a', borderColor: '#3a3a3a' }}
+                  className="w-full border text-white placeholder:text-zinc-500 pl-10 pr-4 py-2.5 text-sm rounded-md focus:outline-none transition-all"
+                  style={{ background: '#161616', borderColor: 'rgba(255,255,255,0.12)' }}
                   aria-label="Search products"
                 />
               </div>
             </form>
             {searchFocused && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-zinc-200 rounded shadow-2xl overflow-hidden z-50">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-md shadow-2xl overflow-hidden z-50" style={{ borderTop: '3px solid var(--color-teal)' }}>
                 {searchResults.map((p) => (
                   <Link
                     key={p.id}
                     to={`/products/${p.groupSlug}/${p.categorySlug}/${p.subcategorySlug}/${p.id}`}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-50 transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 border-b last:border-b-0 hover:bg-zinc-50 transition-colors"
+                    style={{ borderColor: 'var(--color-rule)' }}
                     onClick={() => { setSearchFocused(false); setSearchQuery(""); }}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="text-zinc-800 text-sm font-semibold truncate">{p.name}</div>
-                      <div className="text-zinc-400 text-xs">{p.sku}</div>
+                      <div className="font-mono text-xs" style={{ color: 'var(--color-steel)' }}>{p.sku}</div>
                     </div>
-                    <ChevronRight size={14} className="text-zinc-300 flex-shrink-0" />
+                    <ChevronRight size={14} className="flex-shrink-0" style={{ color: 'var(--color-rule)' }} />
                   </Link>
                 ))}
               </div>
@@ -157,8 +195,8 @@ export default function Header() {
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
-            <Link to="/" className="px-3 py-2 text-sm font-semibold text-white/80 hover:text-white transition-colors tracking-wide">
+          <nav className="hidden lg:flex items-center gap-0.5" aria-label="Main navigation">
+            <Link to="/" className="px-3 py-2 text-[0.92rem] font-medium text-white/75 hover:text-white transition-colors">
               Home
             </Link>
 
@@ -171,7 +209,7 @@ export default function Header() {
             >
               <button
                 onClick={() => setMegaOpen(!megaOpen)}
-                className={`flex items-center gap-1 px-3 py-2 text-sm font-semibold tracking-wide transition-colors ${megaOpen ? "text-white" : "text-white/80 hover:text-white"}`}
+                className={`flex items-center gap-1 px-3 py-2 text-[0.92rem] font-medium transition-colors ${megaOpen ? "text-white" : "text-white/75 hover:text-white"}`}
                 aria-expanded={megaOpen}
                 aria-haspopup="true"
               >
@@ -186,23 +224,24 @@ export default function Header() {
               />
             </div>
 
-            <Link to="/about" className="px-3 py-2 text-sm font-semibold text-white/80 hover:text-white transition-colors tracking-wide">
+            <Link to="/about" className="px-3 py-2 text-[0.92rem] font-medium text-white/75 hover:text-white transition-colors">
               About
             </Link>
-            <Link to="/training" className="px-3 py-2 text-sm font-semibold text-white/80 hover:text-white transition-colors tracking-wide">
+            <Link to="/training" className="px-3 py-2 text-[0.92rem] font-medium text-white/75 hover:text-white transition-colors">
               Training
             </Link>
-            <Link to="/contact" className="px-3 py-2 text-sm font-semibold text-white/80 hover:text-white transition-colors tracking-wide">
+            <Link to="/contact" className="px-3 py-2 text-[0.92rem] font-medium text-white/75 hover:text-white transition-colors">
               Contact
             </Link>
             <Link
               to="/request-a-quote"
-              className="ml-2 px-4 py-2 text-sm font-bold rounded transition-colors"
-              style={{ background: 'var(--color-yellow)', color: 'var(--color-charcoal)' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#ffc61a')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-yellow)')}
+              className="group ml-3 inline-flex items-center gap-1.5 pl-4 pr-3.5 py-2.5 text-sm font-semibold rounded-md transition-all"
+              style={{ background: 'var(--color-signal)', color: 'var(--color-ink)', boxShadow: '0 2px 0 0 rgba(0,0,0,0.35)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#ffc61a'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-signal)'; e.currentTarget.style.transform = 'none'; }}
             >
               Get a Quote
+              <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </nav>
 

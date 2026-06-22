@@ -9,8 +9,9 @@ single-page application with no backend — all content lives in typed data modu
 > reference. Last updated after the **inventory-driven catalogue** landed: the real
 > ITS inventory export now drives ~1,100 products, with per-product category editing,
 > an "Image coming soon" placeholder, a scrolling featured carousel, a resilient
-> import, and an in-progress AI-draft pass for descriptions/specs (Valves + Balance
-> Weights done). See [Product data — inventory workflow](#product-data--inventory-workflow).
+> import, and an in-progress AI-draft pass for descriptions/specs (Valves, Balance
+> Weights, Tyre & Tube Repair, and Air Tools done — ~688 of ~1,097). See
+> [Product data — inventory workflow](#product-data--inventory-workflow).
 
 ---
 
@@ -199,6 +200,15 @@ data/products.xlsx   ── npm run products:import ──▶  src/data/products
   through `scripts/apply-drafts.mjs` (SheetJS). The read-only `draft-descriptions.py`
   only *reads* the workbook and must be run with **`/usr/local/bin/python3`** (the only
   interpreter here with `openpyxl`).
+- **⚠️ Close `products.xlsx` in Excel before running any script that writes it**
+  (`products:sync`, `apply-drafts`). Excel keeps its own copy in memory and re-saves the
+  **entire** file on its next save, silently clobbering script-written cells with its
+  stale version — whoever saves last wins. This already wiped a 109-row Air Tools
+  description batch once (recovered from git + a re-apply). Safe order: finish editing
+  in Excel → **save and close** → then run scripts. If descriptions vanish, they're
+  recoverable: the committed `data/products.xlsx` in git holds them, and re-running the
+  blank-only draft step (`draft-descriptions.py <group>` → `apply-drafts`) restores any
+  that are blank without touching manual edits.
 
 ---
 
@@ -213,11 +223,15 @@ Descriptions are filled, so any manual edit is kept.
 - Run: `/usr/local/bin/python3 scripts/draft-descriptions.py <group-slug>` (emits
   `data/_drafts.json`) → `node scripts/apply-drafts.mjs` → `npm run products:import`.
 - Each group has its own generator inside `draft-descriptions.py` (the naming differs
-  a lot between valves, weights, sockets, patches, airlines…).
+  a lot between valves, weights, sockets, patches, airlines…). Note: in **Air Tools**
+  the inventory subcategory slugs are unreliable (gauges filed under `frl-units`,
+  impact wrenches under `hose-reels`), so `at_draft` classifies off the **product name**,
+  not the subcategory.
 
-**Done:** Valves & Accessories (271), Balance Weights (106).
-**Remaining:** Tyre Fitting & Handling (383), Tyre & Tube Repair (207), Air Tools &
-Airlines (112), Jacking/Retreading/Cordless/Other (~34).
+**Done:** Valves & Accessories (271), Balance Weights (106), Tyre & Tube Repair (202),
+Air Tools & Airlines (109) — ~688 of ~1,097.
+**Remaining:** Tyre Fitting & Handling (385 — the last large group), Jacking/Lifting (22),
+Retreading (6), Cordless (1).
 
 > No-fabrication policy: the generator only restates what the product name/codes
 > encode. Hard-coded marketing filler (fake "Country of Manufacture", "12-month
@@ -367,15 +381,18 @@ or stats):
 
 ## Open / future items
 
-- **Finish the AI-draft pass** — Tyre Fitting & Handling, Tyre & Tube Repair, Air Tools,
-  and the small groups still need descriptions/specs (see above).
-- **Featured row:** currently ~5 products flagged `Y`; pick the final set in col P
-  (ideally real inventory SKUs with photos).
+- **Finish the AI-draft pass** — only **Tyre Fitting & Handling (385)** remains as a
+  large group, plus the small tail (Jacking 22, Retreading 6, Cordless 1). Valves,
+  Balance Weights, Tyre & Tube Repair, and Air Tools are done (see above).
+- **Featured row:** a handful of products are flagged `Y` (incl. the 215N trolley jack,
+  SKU 205336); pick the final set in col P (ideally real inventory SKUs with photos).
 - **10 hidden orphans** — old custom-SKU products that duplicate real inventory items
   are set `Add to site = N` (hidden but still in the sheet); delete the rows once their
   photos are re-pointed to the inventory SKU, or leave hidden.
-- **Git:** most on-site photos in `public/products/` are untracked — `git add` them
-  before deploying or they won't appear live. (This session's work is uncommitted.)
+- **Catalogue is committed and deployed.** The product data, photos, and generators are
+  all in git and live on Netlify (`main` auto-deploys). One loose end: `public/products/205264.jpg`
+  is still on disk but unused (205264 is now hidden) — optionally move it to
+  `_offsite-product-images/` to match the off-site convention.
 - Add remaining product photos (drop into `public/products/`, naming = SKU).
 - Real MSDS/datasheets for the Technical Documents tab (currently placeholder links).
 - `/privacy`, `/terms` are placeholders; quote form is front-end only.

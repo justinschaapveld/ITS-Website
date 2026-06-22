@@ -43,10 +43,11 @@ npm run preview    # serve the production build locally
 npm run typecheck  # tsc --noEmit (type safety; NOT run by the Netlify build)
 npm run lint       # eslint
 
-npm run products:sync    # inventory export + category-mapping -> data/products.xlsx
-npm run products:import  # data/products.xlsx -> src/data/products.ts (per-row validated)
-npm run products:export  # src/data/products.ts -> data/products.xlsx (legacy; rarely needed)
-npm run gen:images       # scan public/products/ -> src/data/productImages.ts
+npm run products:sync       # inventory export + category-mapping -> data/products.xlsx
+npm run products:import     # data/products.xlsx -> src/data/products.ts (per-row validated)
+npm run products:dropdowns  # add cascading Group/Category/Subcategory dropdowns to products.xlsx
+npm run products:export     # src/data/products.ts -> data/products.xlsx (legacy; rarely needed)
+npm run gen:images          # scan public/products/ -> src/data/productImages.ts
 ```
 
 `predev` and `prebuild` hooks automatically run the spreadsheet import **and** the
@@ -183,8 +184,14 @@ data/products.xlsx   ── npm run products:import ──▶  src/data/products
   per-product category moves stick across every sync). Editable columns:
   - **O `Add to site (Y/N)`** — `N` hides a product from the site (blank/`Y` shows it).
   - **P `Featured (Y/N)`** — `Y` adds it to the home featured carousel.
-  - **G/H/I Group/Category/Subcategory Slug** — move a product (valid combos are in
-    the "Categories" tab; the read-only Name columns J/K/L recompute on the next sync).
+  - **G/H/I Group/Category/Subcategory Slug** — move a product. These columns carry
+    **cascading dropdowns** (pick a Group → Category filters to it → Subcategory filters
+    to that) so you can only choose valid combos; the read-only Name columns J/K/L
+    recompute on the next sync. Dropdowns are added by `npm run products:dropdowns`
+    (exceljs — a hidden "Lists" sheet + defined-name lists resolved via INDIRECT).
+    **SheetJS doesn't preserve validation, so re-run `products:dropdowns` after any
+    `products:sync`.** It only touches cell values the same way SheetJS does, so the
+    data round-trips cleanly through `products:import` (verified).
   - Short Description, Description, Specs (one `Label: Value` per line), Name Override.
 - **Editing:** with `npm run dev` running, a Vite dev plugin re-imports on save and
   reloads the preview. (Excel saves via temp-rename, which the watcher can miss while
